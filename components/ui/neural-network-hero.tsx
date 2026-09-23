@@ -187,8 +187,9 @@ function ShaderPlane() {
 
   useFrame((state) => {
     if (!materialRef.current) return;
-    materialRef.current.iTime = state.clock.elapsedTime * 0.8;
     const { width, height } = state.size;
+    if (width <= 0 || height <= 0) return;
+    materialRef.current.iTime = state.clock.elapsedTime * 0.8;
     if (
       lastSizeRef.current.width !== width ||
       lastSizeRef.current.height !== height
@@ -225,8 +226,8 @@ export function ShaderBackground() {
 
       gsap.fromTo(
         canvasRef.current,
-        { autoAlpha: 0 },
-        { autoAlpha: 1, duration: 0.8, ease: "power2.out" },
+        { opacity: 0 },
+        { opacity: 1, duration: 0.8, ease: "power2.out" },
       );
     },
     { scope: canvasRef },
@@ -235,7 +236,7 @@ export function ShaderBackground() {
   return (
     <div
       ref={canvasRef}
-      className="bg-black absolute inset-0 -z-10 w-full h-full"
+      className="bg-black absolute inset-0 -z-10 w-full h-full opacity-0"
       aria-hidden
     >
       <Canvas
@@ -244,11 +245,17 @@ export function ShaderBackground() {
           antialias: false,
           alpha: false,
           powerPreference: "high-performance",
+          depth: false,
+          stencil: false,
         }}
-        dpr={1}
+        dpr={[1, 2]}
+        resize={{ scroll: false, debounce: { scroll: 50, resize: 0 } }}
         style={{ width: "100%", height: "100%" }}
-        // filthy hack we need because of the RDT ext semver error
-        onCreated={() => {
+        onCreated={({ gl, size }) => {
+          if (size.width > 0 && size.height > 0) {
+            gl.setSize(size.width, size.height);
+            gl.setViewport(0, 0, size.width, size.height);
+          }
           if (
             typeof window !== "undefined" &&
             window.__REACT_DEVTOOLS_GLOBAL_HOOK__
