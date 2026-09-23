@@ -13,6 +13,7 @@ import { isMovie, MediaItem, Movie, TvShow } from "@/utils/typings";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { MediaLogo } from "../media/media-logo";
 import { ContentRowHeader } from "./content-row-header";
 
@@ -57,6 +58,7 @@ export function RankedContentRow({
   };
 
   const LandscapeCard = ({ item, rank }: { item: MediaItem; rank: number }) => {
+    const [isLoaded, setIsLoaded] = useState(false);
     const { displayTitle, year } = getItemDetails(item);
     const backdropUrl = item.backdrop_path
       ? `https://image.tmdb.org/t/p/w1280${item.backdrop_path}`
@@ -74,7 +76,10 @@ export function RankedContentRow({
         }}
         role="button"
         tabIndex={0}
-        className="group relative overflow-hidden rounded-lg bg-black/40 backdrop-blur-md ring-1 ring-white/[0.08] shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-primary/5 hover:ring-primary/30 transition-all duration-300 cursor-pointer aspect-video"
+        className={cn(
+          "group relative overflow-hidden rounded-lg bg-black/40 backdrop-blur-md ring-1 ring-white/[0.08] shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-primary/5 hover:ring-primary/30 transition-all duration-300 cursor-pointer aspect-video",
+          !isLoaded && backdropUrl && "animate-shimmer",
+        )}
         aria-label={`View details for ${displayTitle}`}
       >
         {backdropUrl ? (
@@ -82,7 +87,13 @@ export function RankedContentRow({
             src={backdropUrl}
             alt={displayTitle || "Backdrop"}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className={cn(
+              "object-cover transition-all duration-700 ease-out group-hover:scale-105",
+              isLoaded
+                ? "opacity-100 blur-0"
+                : "opacity-0 scale-[1.02] blur-sm",
+            )}
+            onLoad={() => setIsLoaded(true)}
             sizes="(max-width: 768px) 100vw, 50vw"
           />
         ) : (

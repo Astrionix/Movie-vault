@@ -1,9 +1,14 @@
 "use client";
 
 import { MediaItem } from "@/utils/typings";
-import dynamic from "next/dynamic";
-import type { RankedContentRowProps } from "./ranked-content-row";
-import type { StandardContentRowProps } from "./standard-content-row";
+import {
+  RankedContentRow,
+  type RankedContentRowProps,
+} from "./ranked-content-row";
+import {
+  StandardContentRow,
+  type StandardContentRowProps,
+} from "./standard-content-row";
 
 export type ContentRowVariant = "standard" | "ranked";
 export interface ContentRowProps {
@@ -15,22 +20,6 @@ export interface ContentRowProps {
   onLoadMore?: () => Promise<MediaItem[]>;
   hasMoreItems?: boolean;
 }
-
-const LoadingRow = () => (
-  <div className="mx-4 md:mx-8 mb-8">
-    <div className="h-[320px] w-full animate-pulse rounded-md bg-muted/20" />
-  </div>
-);
-
-const StandardContentRow = dynamic(
-  () => import("./standard-content-row").then((m) => m.StandardContentRow),
-  { ssr: false, loading: LoadingRow },
-);
-
-const RankedContentRow = dynamic(
-  () => import("./ranked-content-row").then((m) => m.RankedContentRow),
-  { ssr: false, loading: LoadingRow },
-);
 
 /**
  * ContentRow is a component that displays a list of media items.

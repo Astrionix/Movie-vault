@@ -11,22 +11,26 @@ interface ContentRowSkeletonProps {
   title: string;
   href: string;
   count?: number;
+  variant?: "standard" | "ranked";
 }
 
 /**
  * Server-compatible skeleton component for content rows - used as Suspense fallback
- * No client-side motion to prevent hydration errors
+ * Dimensionally identical to StandardContentRow and RankedContentRow to prevent layout shift
  */
 export function ContentRowSkeleton({
   title,
   href,
   count = 10,
+  variant = "standard",
 }: ContentRowSkeletonProps) {
+  const isRanked = variant === "ranked";
+
   return (
-    <div className="mx-4 md:mx-8">
+    <div className="mx-4 md:mx-8 mb-8 animate-in fade-in duration-300">
       <ContentRowHeader title={title} href={href} />
 
-      <div className="relative">
+      <div className="group/row relative">
         <Carousel
           opts={{
             align: "start",
@@ -36,37 +40,46 @@ export function ContentRowSkeleton({
           }}
           className="w-full"
         >
-          <CarouselContent className="-ml-3 md:-ml-4">
+          <CarouselContent
+            className={
+              isRanked ? "-ml-3 py-3 px-1" : "-ml-2 md:-ml-3 py-4 px-1"
+            }
+          >
             {Array.from({ length: count }).map((_, i) => (
               <CarouselItem
                 key={i}
-                className="pl-3 md:pl-4 basis-[40%] sm:basis-[28%] md:basis-[22%] lg:basis-[18%] xl:basis-[12%]"
+                className={
+                  isRanked
+                    ? "pl-3 md:pl-4 basis-[85%] sm:basis-[55%] md:basis-[42%] lg:basis-[32%] xl:basis-[28%] select-none"
+                    : "pl-2 md:pl-3 basis-[46%] sm:basis-[30%] md:basis-[22%] lg:basis-[18%] xl:basis-[15%] 2xl:basis-[13%] select-none"
+                }
               >
-                <div className="w-full select-none min-h-[280px]">
-                  <div className="relative overflow-hidden rounded-lg aspect-[2/3] group">
-                    <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md border border-white/20 shadow-xl animate-pulse">
-                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent" />
+                {isRanked ? (
+                  <div className="relative overflow-hidden rounded-lg aspect-video bg-black/40 backdrop-blur-md ring-1 ring-white/[0.08] animate-shimmer shadow-lg">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3">
+                      <div className="h-10 w-8 rounded bg-white/10" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 w-3/4 rounded bg-white/10" />
+                        <div className="h-3 w-1/3 rounded bg-white/5" />
+                      </div>
                     </div>
                   </div>
-                  <div className="mt-2 text-foreground min-h-[68px]">
-                    <div className="h-[20px] w-3/4 mb-1 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-sm border border-white/10 rounded-md leading-tight animate-pulse" />
-                    <div className="flex items-center gap-2 text-xs mb-1 h-[16px]">
-                      <div className="h-3 w-12 bg-gradient-to-r from-white/12 to-white/5 backdrop-blur-sm border border-white/10 rounded-sm animate-pulse" />
-                      <div className="h-3 w-8 bg-gradient-to-r from-white/12 to-white/5 backdrop-blur-sm border border-white/10 rounded-sm animate-pulse" />
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1 text-[10px] h-[14px]">
-                      <div className="h-[14px] w-8 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 rounded-sm animate-pulse" />
-                      <div className="h-[14px] w-16 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 rounded-sm animate-pulse" />
-                      <div className="h-[14px] w-12 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/10 rounded-sm animate-pulse" />
+                ) : (
+                  <div className="relative overflow-hidden rounded-xl aspect-[2/3] bg-slate-900/60 backdrop-blur-md border border-white/10 animate-shimmer shadow-lg">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
+                    <div className="absolute bottom-3 left-3 right-3 space-y-2">
+                      <div className="h-3.5 w-3/4 rounded bg-white/10" />
+                      <div className="h-2.5 w-1/2 rounded bg-white/5" />
                     </div>
                   </div>
-                </div>
+                )}
               </CarouselItem>
             ))}
           </CarouselContent>
 
-          <CarouselPrevious className="absolute -left-3 md:-left-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background/90 border-0" />
-          <CarouselNext className="absolute -right-3 md:-right-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background/90 border-0" />
+          <CarouselPrevious className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 h-[75%] w-11 lg:w-12 bg-black/40 rounded-r-xl border-0 ring-1 ring-white/10 shadow-2xl backdrop-blur-md opacity-0 group-hover/row:opacity-100 transition-all duration-300 disabled:opacity-0 disabled:pointer-events-none" />
+          <CarouselNext className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 h-[75%] w-11 lg:w-12 bg-black/40 rounded-l-xl border-0 ring-1 ring-white/10 shadow-2xl backdrop-blur-md opacity-0 group-hover/row:opacity-100 transition-all duration-300 disabled:opacity-0 disabled:pointer-events-none" />
         </Carousel>
       </div>
     </div>

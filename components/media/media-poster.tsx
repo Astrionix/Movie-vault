@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 /**
  * Props for the Poster component
@@ -50,6 +50,8 @@ export const Poster = ({
   className,
   objectFit = "cover",
 }: PosterProps) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   const imageUrl = useMemo(() => {
     if (!posterPath) return "/placeholder-poster.jpg";
 
@@ -87,7 +89,8 @@ export const Poster = ({
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden rounded-lg",
+        "relative w-full overflow-hidden rounded-lg bg-slate-900/60",
+        !isLoaded && "animate-shimmer",
         aspectRatioClass,
         className,
       )}
@@ -99,8 +102,12 @@ export const Poster = ({
         sizes={sizes}
         className={cn(
           objectFit === "cover" ? "object-cover" : "object-contain",
-          "transition-transform duration-300",
+          "transition-all duration-700 ease-out",
+          isLoaded
+            ? "opacity-100 scale-100 blur-0"
+            : "opacity-0 scale-[1.02] blur-sm",
         )}
+        onLoad={() => setIsLoaded(true)}
         placeholder="blur"
         blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
       />

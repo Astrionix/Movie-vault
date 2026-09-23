@@ -29,7 +29,7 @@ export function AsyncContentRow({
 
   if (items.length > 0) {
     return (
-      <section id={rowId} className="my-4">
+      <section id={rowId} className="my-4 animate-in fade-in duration-500">
         <ContentRow title={title} items={items} href={href} variant={variant} />
       </section>
     );
@@ -41,6 +41,7 @@ export function AsyncContentRow({
         title={title}
         href={href}
         count={Math.min(minCount, 10)}
+        variant={variant}
       />
     );
   }

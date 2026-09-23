@@ -83,6 +83,7 @@ export function SuspenseContentRow({
             title={title}
             href={href}
             count={Math.min(minCount, 10)}
+            variant={variant}
           />
         }
       >
