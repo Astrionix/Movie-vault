@@ -3,15 +3,24 @@ import { SeasonDetails, TvShowDetails } from "@/utils/typings";
 /**
  * Fetches details for a TV show by ID
  */
-export async function fetchTVShowDetails(id: string): Promise<TvShowDetails> {
+export async function fetchTVShowDetails(
+  id: string,
+): Promise<TvShowDetails | null> {
   try {
     const apiKey = process.env.TMDB_API_KEY;
+    if (!apiKey) {
+      console.warn(`[TMDB] Missing API key for TV show ${id}`);
+      return null;
+    }
     const response = await fetch(
       `https://api.tmdb.org/3/tv/${id}?api_key=${apiKey}&language=en-US&append_to_response=videos,images,credits,recommendations,similar,keywords,reviews,content_ratings,aggregate_credits`,
       { next: { revalidate: 3600 } },
     );
     if (!response.ok) {
-      throw new Error(`Failed to fetch TV show details: ${response.status}`);
+      console.error(
+        `Failed to fetch TV show details for ${id}: ${response.status}`,
+      );
+      return null;
     }
     const data = await response.json();
 
@@ -39,8 +48,8 @@ export async function fetchTVShowDetails(id: string): Promise<TvShowDetails> {
       content_rating: contentRating,
     };
   } catch (error) {
-    console.error(error);
-    throw new Error("Failed to fetch TV show details");
+    console.error(`Error in fetchTVShowDetails for TV ${id}:`, error);
+    return null;
   }
 }
 

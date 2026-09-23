@@ -58,25 +58,45 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
-  const params = await props.params;
-  const movie = await fetchDetails(params.id);
+  try {
+    const params = await props.params;
+    const movie = await fetchDetails(params.id);
+    if (!movie) {
+      return {
+        title: "Movie | Movie Vault",
+        description: "Watch movies on Movie Vault.",
+      };
+    }
 
-  return generateMediaMetadata({
-    media: movie,
-    mediaType: "movie",
-    mediaId: params.id,
-  });
+    return generateMediaMetadata({
+      media: movie,
+      mediaType: "movie",
+      mediaId: params.id,
+    });
+  } catch (error) {
+    console.error("Error generating movie metadata:", error);
+    return {
+      title: "Movie | Movie Vault",
+    };
+  }
 }
 
 async function fetchDetails(id: string) {
   try {
     const apiKey = process.env.TMDB_API_KEY;
+    if (!apiKey) {
+      console.warn(`[TMDB] Missing API key for movie details ${id}`);
+      return null;
+    }
     const response = await fetch(
       `https://api.tmdb.org/3/movie/${id}?api_key=${apiKey}&language=en-US&append_to_response=videos,images,credits,recommendations,similar,keywords,reviews,release_dates`,
       { next: { revalidate: 3600 } },
     );
     if (!response.ok) {
-      throw new Error(`Failed to fetch movie details: ${response.status}`);
+      console.error(
+        `Failed to fetch movie details for ${id}: ${response.status}`,
+      );
+      return null;
     }
     const data = await response.json();
 
@@ -109,8 +129,8 @@ async function fetchDetails(id: string) {
       content_rating: contentRating,
     };
   } catch (error) {
-    console.error(error);
-    throw new Error("Failed to fetch movie details");
+    console.error(`Error in fetchDetails for movie ${id}:`, error);
+    return null;
   }
 }
 

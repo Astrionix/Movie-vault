@@ -65,14 +65,27 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
-  const params = await props.params;
-  const tvShow = await fetchTVShowDetails(params.id);
+  try {
+    const params = await props.params;
+    const tvShow = await fetchTVShowDetails(params.id);
+    if (!tvShow) {
+      return {
+        title: "TV Show | Movie Vault",
+        description: "Watch TV shows on Movie Vault.",
+      };
+    }
 
-  return generateMediaMetadata({
-    media: tvShow,
-    mediaType: "tv",
-    mediaId: params.id,
-  });
+    return generateMediaMetadata({
+      media: tvShow,
+      mediaType: "tv",
+      mediaId: params.id,
+    });
+  } catch (error) {
+    console.error("Error generating TV show metadata:", error);
+    return {
+      title: "TV Show | Movie Vault",
+    };
+  }
 }
 
 function SeasonsSkeleton() {

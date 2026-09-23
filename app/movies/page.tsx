@@ -53,38 +53,35 @@ export interface Movie {
 }
 
 async function getMoviesHeroData(): Promise<MediaItem[]> {
-  const trendingMoviesResponse = await fetchTMDBData("/discover/movie", {
-    sort_by: "popularity.desc",
-    with_genres: "28|12|16|35|878|10749|10751|10765",
-    "release_date.gte": "2023-01-01",
-    "release_date.lte": "2025-07-12",
-    "vote_count.gte": "100",
-    include_adult: "false",
-    language: "en-US",
-    region: "US",
-  });
+  try {
+    const trendingMoviesResponse = await fetchTMDBData("/discover/movie", {
+      sort_by: "popularity.desc",
+      with_genres: "28|12|16|35|878|10749|10751|10765",
+      "release_date.gte": "2023-01-01",
+      "release_date.lte": "2025-07-12",
+      "vote_count.gte": "100",
+      include_adult: "false",
+      language: "en-US",
+      region: "US",
+    });
 
-  const basicTrendingItems =
-    trendingMoviesResponse.results
-      ?.filter(
-        (movie): movie is Movie =>
-          typeof movie === "object" &&
-          movie !== null &&
-          "id" in movie &&
-          typeof movie.id === "number" &&
-          movie.id !== 1011477,
-      )
-      ?.filter(
-        (movie): movie is Movie =>
-          typeof movie === "object" &&
-          movie !== null &&
-          "id" in movie &&
-          typeof movie.id === "number" &&
-          movie.id !== 1011477,
-      )
-      .slice(0, 10) || [];
+    const basicTrendingItems =
+      trendingMoviesResponse.results
+        ?.filter(
+          (movie): movie is Movie =>
+            typeof movie === "object" &&
+            movie !== null &&
+            "id" in movie &&
+            typeof movie.id === "number" &&
+            movie.id !== 1011477,
+        )
+        .slice(0, 10) || [];
 
-  return fetchAndEnrichMediaItems(basicTrendingItems as MediaItem[], "movie");
+    return fetchAndEnrichMediaItems(basicTrendingItems as MediaItem[], "movie");
+  } catch (error) {
+    console.error("Error fetching movies hero data:", error);
+    return [];
+  }
 }
 
 export default async function MoviesPage() {

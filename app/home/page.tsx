@@ -42,83 +42,88 @@ export const metadata: Metadata = {
 };
 
 async function getHeroCarouselData(): Promise<MediaItem[]> {
-  const [fanFavoriteMoviesResponse, fanFavoriteTVShowsResponse] =
-    await Promise.all([
-      fetchTMDBData("/discover/movie", {
-        with_genres: "16|10751|12|878|35|28|10765",
-        sort_by: "popularity.desc",
-        "vote_average.gte": "7.0",
-        "release_date.gte": "2005-01-01",
-        "release_date.lte": "2025-07-12",
-        "vote_count.gte": "1500",
-        include_adult: "false",
-        language: "en-US",
-        region: "US",
-      }),
-      fetchTMDBData("/discover/tv", {
-        with_genres: "16|10751|12|878|35|28|10765",
-        sort_by: "popularity.desc",
-        "vote_average.gte": "7.0",
-        "first_air_date.gte": "2005-01-01",
-        "first_air_date.lte": "2025-07-12",
-        "vote_count.gte": "1500",
-        include_adult: "false",
-        language: "en-US",
-      }),
+  try {
+    const [fanFavoriteMoviesResponse, fanFavoriteTVShowsResponse] =
+      await Promise.all([
+        fetchTMDBData("/discover/movie", {
+          with_genres: "16|10751|12|878|35|28|10765",
+          sort_by: "popularity.desc",
+          "vote_average.gte": "7.0",
+          "release_date.gte": "2005-01-01",
+          "release_date.lte": "2025-07-12",
+          "vote_count.gte": "1500",
+          include_adult: "false",
+          language: "en-US",
+          region: "US",
+        }),
+        fetchTMDBData("/discover/tv", {
+          with_genres: "16|10751|12|878|35|28|10765",
+          sort_by: "popularity.desc",
+          "vote_average.gte": "7.0",
+          "first_air_date.gte": "2005-01-01",
+          "first_air_date.lte": "2025-07-12",
+          "vote_count.gte": "1500",
+          include_adult: "false",
+          language: "en-US",
+        }),
+      ]);
+
+    const fanFavoriteMovies = fanFavoriteMoviesResponse?.results ?? [];
+    const fanFavoriteTVShows = fanFavoriteTVShowsResponse?.results ?? [];
+
+    const moviesWithType = fanFavoriteMovies.map((item: MediaItem) => ({
+      ...item,
+      media_type: "movie" as const,
+    }));
+
+    const tvShowsWithType = fanFavoriteTVShows.map((item: MediaItem) => ({
+      ...item,
+      media_type: "tv" as const,
+    }));
+
+    const combinedFanFavorites = [...moviesWithType, ...tvShowsWithType];
+
+    if (combinedFanFavorites.length === 0) {
+      return [];
+    }
+
+    const seenIds = new Set<number>();
+    const filteredFanFavoriteContent = combinedFanFavorites
+      .filter((item: MediaItem) => {
+        if (!item.poster_path) return false;
+        if (seenIds.has(item.id)) return false;
+        if (item.title === "28 Days Later" || item.name === "28 Days Later")
+          return false;
+        if (item.id === 986056) return false;
+        seenIds.add(item.id);
+        return true;
+      })
+      .sort((a, b) => b.vote_average - a.vote_average)
+      .slice(1, 10);
+
+    const moviesToEnrich = filteredFanFavoriteContent.filter(
+      (item) => item.media_type === "movie",
+    );
+    const tvShowsToEnrich = filteredFanFavoriteContent.filter(
+      (item) => item.media_type === "tv",
+    );
+
+    const [enrichedMovies, enrichedTVShows] = await Promise.all([
+      moviesToEnrich.length > 0
+        ? fetchAndEnrichMediaItems(moviesToEnrich, "movie")
+        : Promise.resolve([]),
+      tvShowsToEnrich.length > 0
+        ? fetchAndEnrichMediaItems(tvShowsToEnrich, "tv")
+        : Promise.resolve([]),
     ]);
 
-  const fanFavoriteMovies = fanFavoriteMoviesResponse?.results ?? [];
-  const fanFavoriteTVShows = fanFavoriteTVShowsResponse?.results ?? [];
-
-  const moviesWithType = fanFavoriteMovies.map((item: MediaItem) => ({
-    ...item,
-    media_type: "movie" as const,
-  }));
-
-  const tvShowsWithType = fanFavoriteTVShows.map((item: MediaItem) => ({
-    ...item,
-    media_type: "tv" as const,
-  }));
-
-  const combinedFanFavorites = [...moviesWithType, ...tvShowsWithType];
-
-  if (combinedFanFavorites.length === 0) {
+    return [...enrichedMovies, ...enrichedTVShows].sort(
+      (a, b) => b.vote_average - a.vote_average,
+    );
+  } catch (error) {
+    console.error("Error in getHeroCarouselData:", error);
     return [];
   }
-
-  const seenIds = new Set<number>();
-  const filteredFanFavoriteContent = combinedFanFavorites
-    .filter((item: MediaItem) => {
-      if (!item.poster_path) return false;
-      if (seenIds.has(item.id)) return false;
-      if (item.title === "28 Days Later" || item.name === "28 Days Later")
-        return false;
-      if (item.id === 986056) return false;
-      seenIds.add(item.id);
-      return true;
-    })
-    .sort((a, b) => b.vote_average - a.vote_average)
-    .slice(1, 10);
-
-  const moviesToEnrich = filteredFanFavoriteContent.filter(
-    (item) => item.media_type === "movie",
-  );
-  const tvShowsToEnrich = filteredFanFavoriteContent.filter(
-    (item) => item.media_type === "tv",
-  );
-
-  const [enrichedMovies, enrichedTVShows] = await Promise.all([
-    moviesToEnrich.length > 0
-      ? fetchAndEnrichMediaItems(moviesToEnrich, "movie")
-      : Promise.resolve([]),
-    tvShowsToEnrich.length > 0
-      ? fetchAndEnrichMediaItems(tvShowsToEnrich, "tv")
-      : Promise.resolve([]),
-  ]);
-
-  return [...enrichedMovies, ...enrichedTVShows].sort(
-    (a, b) => b.vote_average - a.vote_average,
-  );
 }
 
 export default async function Home() {

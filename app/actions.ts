@@ -468,37 +468,50 @@ export async function fetchTMDBData<T = MediaItem>(
     url.searchParams.append("page", page.toString());
   }
 
-  const response = await fetch(url.toString(), {
-    next: { revalidate: 3600 }, // cache tmdb responses for 1 hour
-  });
+  try {
+    const response = await fetch(url.toString(), {
+      next: { revalidate: 3600 }, // cache tmdb responses for 1 hour
+    });
 
-  if (!response.ok) {
-    logger.error(
-      `TMDB API error: ${response.status} ${response.statusText} ${response.body} ${response.headers} ${response.url}`,
-    );
-    throw new Error(
-      `TMDB API error: ${response.status} ${response.statusText}`,
-    );
-  }
+    if (!response.ok) {
+      logger.error(
+        `TMDB API error for ${endpoint}: ${response.status} ${response.statusText}`,
+      );
+      return {
+        page: 1,
+        results: [] as unknown as T[],
+        total_pages: 0,
+        total_results: 0,
+      };
+    }
 
-  const rawData = await response.json();
+    const rawData = await response.json();
 
-  // Use Zod to validate the response
-  const result = TmdbResponseSchema.safeParse(rawData);
+    // Use Zod to validate the response
+    const result = TmdbResponseSchema.safeParse(rawData);
 
-  if (!result.success) {
-    logger.warn("TMDB response failed validation:", result.error.message);
-    // Fall back to raw data to maintain backward compatibility
+    if (!result.success) {
+      logger.warn("TMDB response failed validation:", result.error.message);
+      // Fall back to raw data to maintain backward compatibility
+      return {
+        ...rawData,
+        results: rawData.results || [],
+      } as TmdbResponse<T>;
+    }
+
     return {
-      ...rawData,
-      results: rawData.results || [],
-    } as TmdbResponse<T>;
+      ...result.data,
+      results: (result.data.results || []) as T[],
+    };
+  } catch (error) {
+    logger.error(`Error in fetchTMDBData for ${endpoint}:`, error);
+    return {
+      page: 1,
+      results: [] as unknown as T[],
+      total_pages: 0,
+      total_results: 0,
+    };
   }
-
-  return {
-    ...result.data,
-    results: (result.data.results || []) as T[],
-  };
 }
 
 export async function getNumberOfEpisodes(
