@@ -7,6 +7,7 @@ import { useSearchPreview } from "@/hooks/use-search-preview";
 import { cn } from "@/lib/utils";
 import { ArrowRight, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { Poster } from "../media/media-poster";
 import SearchResults from "./search-results";
@@ -215,19 +216,23 @@ export const NavbarSearchClient = forwardRef<
   const { results, isLoading } = useSearchPreview(query);
 
   const handleSearch = useCallback(() => {
-    if (results.length > 0) {
-      const selected =
-        selectedIndex >= 0 && selectedIndex < results.length
-          ? results[selectedIndex]
-          : results[0];
+    if (selectedIndex >= 0 && selectedIndex < results.length) {
+      const selected = results[selectedIndex];
       if (selected) {
         const mediaType =
           selected.media_type === "movie" ? "movies" : "tvshows";
         router.push(`/${mediaType}/${selected.id}`);
         setShowPreview(false);
+        setIsFocused(false);
+        return;
       }
     }
-  }, [results, selectedIndex, router]);
+    if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+      setShowPreview(false);
+      setIsFocused(false);
+    }
+  }, [results, selectedIndex, query, router]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -324,12 +329,12 @@ export const NavbarSearchClient = forwardRef<
               }
             }}
             onBlur={() => {
-              setIsFocused(false);
               setTimeout(() => {
+                setIsFocused(false);
                 if (!isMouseOverResults) {
                   setShowPreview(false);
                 }
-              }, 100);
+              }, 200);
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -362,6 +367,10 @@ export const NavbarSearchClient = forwardRef<
         {showPreview && (
           <div
             className="absolute top-full left-0 right-0 mt-2 bg-black/60 backdrop-blur-md border border-white/20 rounded-lg shadow-xl z-50 max-h-80 overflow-hidden"
+            onMouseDown={(e) => {
+              // Crucial: prevent input from blurring before click/navigation completes
+              e.preventDefault();
+            }}
             onMouseEnter={() => setIsMouseOverResults(true)}
             onMouseLeave={() => setIsMouseOverResults(false)}
           >
@@ -390,15 +399,12 @@ export const NavbarSearchClient = forwardRef<
                       const href = `/${mediaType}/${item.id}`;
 
                       return (
-                        <div
+                        <Link
                           key={`${item.id}-${item.media_type}`}
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            router.push(href);
+                          href={href}
+                          onClick={() => {
                             setShowPreview(false);
-                          }}
-                          onMouseEnter={() => {
-                            router.prefetch(href);
+                            setIsFocused(false);
                           }}
                           className={`flex items-center gap-2 p-2 cursor-pointer transition-all duration-150 hover:bg-accent/50 ${
                             index === selectedIndex ? "bg-accent/80" : ""
@@ -430,7 +436,7 @@ export const NavbarSearchClient = forwardRef<
                                 ` • ${(item.release_date || item.first_air_date)?.split("-")[0]}`}
                             </p>
                           </div>
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>
