@@ -13,12 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { AudioLanguageToggle } from "@/components/ui/audio-language-toggle";
 import {
   AUDIO_LANGUAGES,
@@ -37,6 +32,7 @@ import {
   Server,
   ShieldCheck,
   SkipForward,
+  X,
 } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -267,7 +263,7 @@ export function StreamPlayer({
           <button
             type="button"
             onClick={handleNextServer}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold bg-primary/25 hover:bg-primary/40 text-white backdrop-blur-md border border-primary/40 transition-all hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold bg-primary/25 hover:bg-primary/40 text-white backdrop-blur-md border border-primary/40 transition-all hover:scale-105 active:scale-95 shadow-xl cursor-pointer shrink-0"
             title="Next Server (Press N or S)"
           >
             <SkipForward className="h-3.5 w-3.5 text-primary" />
@@ -279,7 +275,7 @@ export function StreamPlayer({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold bg-black/80 hover:bg-black/95 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold bg-black/80 hover:bg-black/95 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-105 active:scale-95 shadow-xl cursor-pointer shrink-0"
                 aria-label="Switch Server"
               >
                 <Server className="h-3.5 w-3.5 text-primary" />
@@ -329,30 +325,37 @@ export function StreamPlayer({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <AudioLanguageToggle variant="compact" />
+          <div className="shrink-0">
+            <AudioLanguageToggle variant="compact" />
+          </div>
 
           {/* Fullscreen Button for Mobile & Desktop */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={toggleFullscreen}
-                className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-black/80 hover:bg-black/95 text-white/80 hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-2xl cursor-pointer"
-                aria-label={
-                  isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"
-                }
-              >
-                {isFullscreen ? (
-                  <Minimize className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                ) : (
-                  <Maximize className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                )}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              <p>{isFullscreen ? "Exit Fullscreen (F)" : "Fullscreen (F)"}</p>
-            </TooltipContent>
-          </Tooltip>
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 rounded-full bg-black/80 hover:bg-black/95 text-white/80 hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-2xl cursor-pointer"
+            aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+            title={
+              isFullscreen ? "Exit Fullscreen (F)" : "Enter Fullscreen (F)"
+            }
+          >
+            {isFullscreen ? (
+              <Minimize className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            ) : (
+              <Maximize className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            )}
+          </button>
+
+          {/* Close Player Button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 rounded-full bg-black/80 hover:bg-rose-600/90 text-white/80 hover:text-white backdrop-blur-md border border-white/20 hover:border-rose-500/50 flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-2xl cursor-pointer"
+            aria-label="Close player"
+            title="Close Player (Esc)"
+          >
+            <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          </button>
         </div>
 
         {/* Central Cinema Stage - 100% Seamless Full-Screen */}
