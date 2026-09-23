@@ -1,10 +1,8 @@
 "use client";
 
-import { getWatchlistItem } from "@/app/watchlist/actions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Bookmark, BookmarkCheck } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { type ReactNode, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -17,6 +15,8 @@ interface WatchlistButtonProps {
   children?: ReactNode;
 }
 
+export const WATCHLIST_STORAGE_KEY = "movievault_local_watchlist";
+
 export function WatchlistButton({
   contentId,
   mediaType,
@@ -28,83 +28,56 @@ export function WatchlistButton({
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isToggling, setIsToggling] = useState(false);
-  const session = useSession();
 
   useEffect(() => {
-    if (!mediaType) return;
-    const checkWatchlistStatus = async () => {
-      try {
-        const item = await getWatchlistItem(contentId, mediaType);
-        setIsInWatchlist(!!item);
-      } catch (error) {
-        console.error("Error checking watchlist status:", error);
-      } finally {
-        setIsLoading(false);
+    if (!mediaType || typeof window === "undefined") {
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const stored = localStorage.getItem(WATCHLIST_STORAGE_KEY);
+      if (stored) {
+        const list = JSON.parse(stored);
+        const exists = list.some(
+          (item: { contentId: number; mediaType: string }) =>
+            item.contentId === contentId && item.mediaType === mediaType,
+        );
+        setIsInWatchlist(exists);
       }
-    };
-    // TODO(StreamX): Fix over-fetching with TanStack Query and or caching
-    checkWatchlistStatus();
+    } catch {
+      // ignore storage errors
+    } finally {
+      setIsLoading(false);
+    }
   }, [contentId, mediaType]);
 
-  const handleToggle = async () => {
-    if (isLoading || isToggling) return;
-    // TODO(StreamX): local-only / single device watchlists
-    if (!session.data?.user?.id)
-      return toast.error(
-        "To add items to your watchlist, you must be logged in.",
-      );
-
+  const handleToggle = () => {
+    if (isLoading || isToggling || !mediaType) return;
     setIsToggling(true);
     try {
+      const stored = localStorage.getItem(WATCHLIST_STORAGE_KEY);
+      let list: Array<{
+        contentId: number;
+        mediaType: string;
+        addedAt: number;
+      }> = stored ? JSON.parse(stored) : [];
+
       if (isInWatchlist) {
-        if (!mediaType) return;
-        // Get the watchlist item ID first
-        const item = await getWatchlistItem(contentId, mediaType);
-        if (!item) {
-          setIsInWatchlist(false);
-          return;
-        }
-
-        // Remove from watchlist
-        const response = await fetch(`/api/watchlist/${item.id}`, {
-          method: "DELETE",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to remove from watchlist");
-        }
-
+        list = list.filter(
+          (item) =>
+            !(item.contentId === contentId && item.mediaType === mediaType),
+        );
+        localStorage.setItem(WATCHLIST_STORAGE_KEY, JSON.stringify(list));
         setIsInWatchlist(false);
         toast.success("Removed from watchlist");
       } else {
-        if (!mediaType) return;
-        // Add to watchlist
-        const response = await fetch("/api/watchlist", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contentId,
-            mediaType,
-            status: "watching",
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to add to watchlist");
-        }
-
+        list.push({ contentId, mediaType, addedAt: Date.now() });
+        localStorage.setItem(WATCHLIST_STORAGE_KEY, JSON.stringify(list));
         setIsInWatchlist(true);
         toast.success("Added to watchlist");
       }
-    } catch (error) {
-      console.error("Error toggling watchlist:", error);
-      toast.error(
-        isInWatchlist
-          ? "Failed to remove from watchlist"
-          : "Failed to add to watchlist",
-      );
+    } catch {
+      toast.error("Failed to update watchlist");
     } finally {
       setIsToggling(false);
     }
