@@ -1,0 +1,20 @@
+#!/bin/sh
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Try to find bun in common locations if not in PATH
+if ! command -v bun >/dev/null 2>&1; then
+  if [ -f "$HOME/.bun/bin/bun" ]; then
+    export PATH="$HOME/.bun/bin:$PATH"
+  elif [ -f "/opt/homebrew/bin/bun" ]; then
+    export PATH="/opt/homebrew/bin:$PATH"
+  elif [ -f "$HOME/.local/bin/bun" ]; then
+    export PATH="$HOME/.local/bin:$PATH"
+  fi
+fi
+
+# Verify bun is available, fallback to npx if not
+if command -v bun >/dev/null 2>&1; then
+  bun "$SCRIPT_DIR/check-emoji.js" "$1" || bunx --bun @humankode/git-commit-emojify@latest "$1"
+else
+  # Fallback to npx if bun is not available
+  npx --yes @humankode/git-commit-emojify@latest "$1"
+fi

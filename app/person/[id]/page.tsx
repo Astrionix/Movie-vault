@@ -1,0 +1,187 @@
+import {
+  buildItemsWithCategories,
+  fetchPersonFilmography,
+  getPersonDetails,
+} from "@/app/actions";
+import { ContentContainer } from "@/components/layout/content-container";
+import { PageContainer } from "@/components/layout/page-container";
+import { StableBackground } from "@/components/layout/stable-background";
+import { BiographyReadMore } from "@/components/person/biography-read-more";
+import { MediaItem } from "@/utils/typings";
+import { Calendar, MapPin, User } from "lucide-react";
+import { Metadata } from "next";
+import Image from "next/image";
+import { notFound } from "next/navigation";
+import { PersonFilmography } from "./client-filmography";
+
+interface PersonPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export async function generateMetadata(
+  props: PersonPageProps,
+): Promise<Metadata> {
+  const params = await props.params;
+  const personId = parseInt(params.id);
+
+  if (isNaN(personId)) {
+    return {
+      title: "Person Not Found",
+    };
+  }
+
+  try {
+    const person = await getPersonDetails(personId);
+
+    if (!person) {
+      return {
+        title: "Person Not Found",
+      };
+    }
+
+    return {
+      title: `${person.name} - Filmography`,
+      description: person.biography
+        ? person.biography.substring(0, 160)
+        : `View all movies and TV shows featuring ${person.name}`,
+    };
+  } catch {
+    return {
+      title: "Person Not Found",
+    };
+  }
+}
+
+export default async function PersonPage(props: PersonPageProps) {
+  const params = await props.params;
+  const personId = parseInt(params.id);
+
+  if (isNaN(personId)) {
+    notFound();
+  }
+
+  const person = await getPersonDetails(personId);
+
+  if (!person) {
+    notFound();
+  }
+
+  // Fetch initial filmography for the client component
+  const initialFilmographyResponse = await fetchPersonFilmography(personId, 1);
+  let initialFilmography: MediaItem[] = [];
+
+  if (initialFilmographyResponse?.results) {
+    const validResults = initialFilmographyResponse.results.filter(
+      (
+        item,
+      ): item is {
+        id: number;
+        genre_ids?: number[];
+        poster_path?: string | null;
+      } =>
+        typeof item === "object" &&
+        item !== null &&
+        "id" in item &&
+        typeof (item as { id: unknown }).id === "number" &&
+        Boolean((item as { poster_path?: string | null }).poster_path),
+    );
+
+    if (validResults.length > 0) {
+      initialFilmography = await buildItemsWithCategories(
+        validResults,
+        "multi",
+      );
+    }
+  }
+
+  return (
+    <PageContainer className="pb-4 mb-4">
+      <div className="relative min-h-screen">
+        <StableBackground />
+        <div className="relative z-10">
+          <ContentContainer
+            className="mx-auto px-4 mt-6 relative z-10 max-w-7xl"
+            topSpacing={false}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div className="lg:col-span-1 flex justify-center lg:justify-start">
+                <div className="rounded-lg overflow-hidden shadow-xl mt-4 mb-4 w-[280px] sm:w-[320px] lg:w-full">
+                  {person.profile_path ? (
+                    <Image
+                      src={`https://image.tmdb.org/t/p/w500${person.profile_path}`}
+                      alt={person.name || "Person"}
+                      width={500}
+                      height={750}
+                      className="w-full h-auto"
+                    />
+                  ) : (
+                    <div className="w-full aspect-[2/3] flex items-center justify-center bg-muted">
+                      <User size={120} className="text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="lg:col-span-2">
+                <div className="bg-black/60 backdrop-blur-md border border-white/20 rounded-lg p-6 space-y-6 shadow-xl">
+                  <h1 className="text-3xl md:text-4xl font-bold text-white">
+                    {person.name}
+                  </h1>
+
+                  <div className="space-y-3">
+                    {person.birthday && (
+                      <div className="flex items-center space-x-3">
+                        <Calendar size={18} className="text-gray-400" />
+                        <span className="text-white">
+                          Born: {new Date(person.birthday).toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
+
+                    {person.place_of_birth && (
+                      <div className="flex items-center space-x-3">
+                        <MapPin size={18} className="text-gray-400" />
+                        <span className="text-white">
+                          {person.place_of_birth}
+                        </span>
+                      </div>
+                    )}
+
+                    {person.known_for_department && (
+                      <div className="flex items-center space-x-3">
+                        <User size={18} className="text-gray-400" />
+                        <span className="text-white">
+                          Known for: {person.known_for_department}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {person.biography && (
+                    <BiographyReadMore biography={person.biography} />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-black/60 backdrop-blur-md border border-white/20 rounded-lg p-6 shadow-xl">
+              <div className="space-y-4 mb-6">
+                <h2 className="text-2xl font-bold text-white">Filmography</h2>
+                <p className="text-gray-300">
+                  All movies and TV shows featuring {person.name}.
+                </p>
+              </div>
+
+              <PersonFilmography
+                personId={personId}
+                initialFilmography={initialFilmography}
+              />
+            </div>
+          </ContentContainer>
+        </div>
+      </div>
+    </PageContainer>
+  );
+}

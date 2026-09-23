@@ -1,0 +1,53 @@
+name: Movie-Vault-CI
+
+env:
+  HUSKY: 0
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Create .env file
+        run: |
+          echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY || '46f28f3ce103e75bbcd73a5fcb604fd4' }}" >> .env.local
+
+      - name: Build the app
+        if: github.event_name == 'push'
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY || '46f28f3ce103e75bbcd73a5fcb604fd4' }}
+        run: bun run build
+
+      - name: Check formatting
+        run: bun run check-format
+
+      - name: Run lint
+        run: bun run lint
+
+      - name: Type check
+        run: bun run type-check
+
+      - name: Run tests
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY || '46f28f3ce103e75bbcd73a5fcb604fd4' }}
+        run: bun run test-ci
+

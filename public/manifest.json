@@ -1,0 +1,21 @@
+{
+  "name": "Movie Vault",
+  "short_name": "Movie Vault",
+  "description": "Movie Vault is an open-source, no-cost, and ad-free movie and tv show stream aggregator.",
+  "icons": [
+    {
+      "src": "/logo-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000"
+}

@@ -1,0 +1,52 @@
+"use client";
+
+import { MediaItem } from "@/utils/typings";
+import dynamic from "next/dynamic";
+import type { RankedContentRowProps } from "./ranked-content-row";
+import type { StandardContentRowProps } from "./standard-content-row";
+
+export type ContentRowVariant = "standard" | "ranked";
+export interface ContentRowProps {
+  title: string;
+  items: MediaItem[];
+  href: string;
+  variant?: ContentRowVariant;
+  contentRating?: Record<number, string | null>;
+  onLoadMore?: () => Promise<MediaItem[]>;
+  hasMoreItems?: boolean;
+}
+
+const LoadingRow = () => (
+  <div className="mx-4 md:mx-8 mb-8">
+    <div className="h-[320px] w-full animate-pulse rounded-md bg-muted/20" />
+  </div>
+);
+
+const StandardContentRow = dynamic(
+  () => import("./standard-content-row").then((m) => m.StandardContentRow),
+  { ssr: false, loading: LoadingRow },
+);
+
+const RankedContentRow = dynamic(
+  () => import("./ranked-content-row").then((m) => m.RankedContentRow),
+  { ssr: false, loading: LoadingRow },
+);
+
+/**
+ * ContentRow is a component that displays a list of media items.
+ * It can be either a standard or ranked list, depending on the variant prop.
+ * @param props - The props for the ContentRow component.
+ * @returns The ContentRow component.
+ */
+export function ContentRow(props: ContentRowProps) {
+  const { variant = "standard", ...restProps } = props;
+
+  const standardProps: StandardContentRowProps = restProps;
+  const rankedProps: RankedContentRowProps = restProps;
+
+  if (variant === "ranked") {
+    return <RankedContentRow {...rankedProps} />;
+  }
+
+  return <StandardContentRow {...standardProps} />;
+}
