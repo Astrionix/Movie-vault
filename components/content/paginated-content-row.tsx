@@ -6,8 +6,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import useMedia from "@/hooks/useMedia";
@@ -127,9 +125,6 @@ export function PaginatedContentRow({
               </CarouselItem>
             )}
           </CarouselContent>
-
-          <CarouselPrevious className="absolute -left-3 md:-left-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background/90 border-0" />
-          <CarouselNext className="absolute -right-3 md:-right-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background/90 border-0" />
         </Carousel>
       </div>
 

@@ -2,8 +2,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { ContentRowHeader } from "./content-row-header";
 
@@ -77,9 +75,6 @@ export function ContentRowSkeleton({
               </CarouselItem>
             ))}
           </CarouselContent>
-
-          <CarouselPrevious className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 h-[75%] w-11 lg:w-12 bg-black/40 rounded-r-xl border-0 ring-1 ring-white/10 shadow-2xl backdrop-blur-md opacity-0 group-hover/row:opacity-100 transition-all duration-300 disabled:opacity-0 disabled:pointer-events-none" />
-          <CarouselNext className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 h-[75%] w-11 lg:w-12 bg-black/40 rounded-l-xl border-0 ring-1 ring-white/10 shadow-2xl backdrop-blur-md opacity-0 group-hover/row:opacity-100 transition-all duration-300 disabled:opacity-0 disabled:pointer-events-none" />
         </Carousel>
       </div>
     </div>

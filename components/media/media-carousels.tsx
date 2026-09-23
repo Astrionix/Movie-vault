@@ -9,8 +9,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Actor, Movie, TvShow, Video } from "@/utils/typings";
 import MediaCard from "./media-card";
@@ -105,8 +103,6 @@ export function CastCarousel({ cast }: CastCarouselProps) {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-2 bg-background/80 hover:bg-background/90 border border-border text-foreground backdrop-blur-sm" />
-          <CarouselNext className="right-2 bg-background/80 hover:bg-background/90 border border-border text-foreground backdrop-blur-sm" />
         </Carousel>
       </div>
     </section>
@@ -172,8 +168,6 @@ export function VideoCarousel({ videos }: VideoCarouselProps) {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-2 bg-background/80 hover:bg-background/90 border border-border text-foreground backdrop-blur-sm" />
-          <CarouselNext className="right-2 bg-background/80 hover:bg-background/90 border border-border text-foreground backdrop-blur-sm" />
         </Carousel>
       </div>
     </section>
@@ -236,8 +230,6 @@ export function RecommendationsCarousel({
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-2 bg-background/80 hover:bg-background/90 border border-border text-foreground backdrop-blur-sm" />
-          <CarouselNext className="right-2 bg-background/80 hover:bg-background/90 border border-border text-foreground backdrop-blur-sm" />
         </Carousel>
       </div>
     </section>

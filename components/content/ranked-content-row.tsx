@@ -4,13 +4,11 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Icons } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { isMovie, MediaItem, Movie, TvShow } from "@/utils/typings";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -173,14 +171,6 @@ export function RankedContentRow({
               </CarouselItem>
             ))}
           </CarouselContent>
-
-          {/* Netflix-Style Side Scroll Navigation Handles */}
-          <CarouselPrevious className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 h-[78%] w-11 lg:w-12 bg-black/60 hover:bg-black/90 text-white hover:text-primary rounded-r-xl border-0 ring-1 ring-white/10 shadow-2xl backdrop-blur-md opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-30 cursor-pointer disabled:opacity-0 disabled:pointer-events-none hover:scale-105 active:scale-95">
-            <ChevronLeft className="h-8 w-8 stroke-[2.5]" />
-          </CarouselPrevious>
-          <CarouselNext className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 h-[78%] w-11 lg:w-12 bg-black/60 hover:bg-black/90 text-white hover:text-primary rounded-l-xl border-0 ring-1 ring-white/10 shadow-2xl backdrop-blur-md opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-30 cursor-pointer disabled:opacity-0 disabled:pointer-events-none hover:scale-105 active:scale-95">
-            <ChevronRight className="h-8 w-8 stroke-[2.5]" />
-          </CarouselNext>
         </Carousel>
       </div>
     </div>

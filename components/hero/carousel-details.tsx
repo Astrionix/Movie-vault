@@ -6,7 +6,6 @@ import {
   type CarouselApi,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/icons";
@@ -241,7 +240,6 @@ export const CarouselDetails = React.memo(function CarouselDetails({
                   );
                 })}
               </CarouselContent>
-              <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white z-10" />
             </Carousel>
           </div>
         </div>
