@@ -2,10 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 body {
   scroll-behavior: smooth;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* *=========== Default theme =========== */
@@ -290,6 +298,18 @@ body {
 * {
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--muted-foreground) / 0.4) hsl(var(--background));
+}
+
+/* Fluid momentum card scrolling and hardware acceleration */
+[aria-roledescription="carousel"] {
+  contain: layout paint;
+}
+
+[aria-roledescription="slide"] {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 @theme inline {

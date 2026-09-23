@@ -3,6 +3,7 @@
 import useEmblaCarousel, {
   type UseEmblaCarouselType,
 } from "embla-carousel-react";
+import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -57,12 +58,20 @@ const Carousel = React.forwardRef<
     },
     ref,
   ) => {
+    const carouselPlugins = React.useMemo(() => {
+      const wheel = WheelGesturesPlugin();
+      if (!plugins) return [wheel];
+      if (Array.isArray(plugins)) return [wheel, ...plugins];
+      return [wheel, plugins];
+    }, [plugins]);
+
     const [carouselRef, api] = useEmblaCarousel(
       {
+        dragFree: true,
         ...opts,
         axis: orientation === "horizontal" ? "x" : "y",
       },
-      plugins,
+      carouselPlugins,
     );
     const [canScrollPrev, setCanScrollPrev] = React.useState(false);
     const [canScrollNext, setCanScrollNext] = React.useState(false);
@@ -156,7 +165,14 @@ const CarouselContent = React.forwardRef<
   const { carouselRef, orientation } = useCarousel();
 
   return (
-    <div ref={carouselRef} className={cn(className, "overflow-hidden")}>
+    <div
+      ref={carouselRef}
+      className={cn(
+        "overflow-hidden cursor-grab active:cursor-grabbing select-none",
+        orientation === "horizontal" ? "touch-pan-y" : "touch-pan-x",
+        className?.includes("h-full") && "h-full",
+      )}
+    >
       <div
         ref={ref}
         className={cn(

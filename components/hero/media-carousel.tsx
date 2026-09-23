@@ -93,7 +93,12 @@ export function MediaCarousel({ items }: MediaCarouselProps) {
           className="w-full h-full"
           setApi={setDesktopCarouselApi}
           plugins={[Fade()]}
-          opts={{ loop: true, duration: 50, containScroll: "trimSnaps" }}
+          opts={{
+            loop: true,
+            duration: 50,
+            containScroll: "trimSnaps",
+            dragFree: false,
+          }}
         >
           <CarouselContent className="!ml-0 h-full">
             {items.map((item, index) => (

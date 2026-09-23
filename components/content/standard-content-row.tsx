@@ -120,7 +120,7 @@ export function StandardContentRow({
             loop: false,
             slidesToScroll: "auto",
             containScroll: "trimSnaps",
-            dragFree: false,
+            dragFree: true,
           }}
           setApi={setApi}
           className="w-full"

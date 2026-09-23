@@ -148,7 +148,7 @@ export function RankedContentRow({
             loop: false,
             slidesToScroll: "auto",
             containScroll: "trimSnaps",
-            dragFree: false,
+            dragFree: true,
           }}
           className="w-full"
         >
