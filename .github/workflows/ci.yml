@@ -29,12 +29,12 @@ jobs:
 
       - name: Create .env file
         run: |
-          echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY || '46f28f3ce103e75bbcd73a5fcb604fd4' }}" >> .env.local
+          echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" >> .env.local
 
       - name: Build the app
         if: github.event_name == 'push'
         env:
-          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY || '46f28f3ce103e75bbcd73a5fcb604fd4' }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
         run: bun run build
 
       - name: Check formatting
@@ -48,6 +48,6 @@ jobs:
 
       - name: Run tests
         env:
-          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY || '46f28f3ce103e75bbcd73a5fcb604fd4' }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
         run: bun run test-ci
 

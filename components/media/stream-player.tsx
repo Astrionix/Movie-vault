@@ -30,6 +30,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
   Keyboard,
+  Maximize,
+  Minimize,
   Play,
   RotateCcw,
   Server,
@@ -88,6 +90,18 @@ export function StreamPlayer({
   // Track hydration for portal mounting
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Track fullscreen state change
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFsChange);
   }, []);
 
   // Prevent background scrolling while cinema player is active
@@ -240,11 +254,11 @@ export function StreamPlayer({
           className="absolute top-0 left-0 right-0 h-16 z-40 pointer-events-auto"
         />
 
-        {/* Minimalist Floating Controls (Always mounted & accessible, gently dims when idle, full brightness on hover or top move) */}
+        {/* Minimalist Floating Controls (Responsive on mobile & desktop) */}
         <div
           onMouseEnter={() => setShowHeader(true)}
           className={cn(
-            "absolute top-4 right-4 z-50 pointer-events-auto flex items-center gap-2 transition-all duration-300",
+            "absolute top-3 right-3 sm:top-4 sm:right-4 z-50 pointer-events-auto flex items-center gap-1.5 sm:gap-2 transition-all duration-300 max-w-[calc(100vw-24px)] flex-wrap justify-end",
             showHeader
               ? "opacity-100 scale-100"
               : "opacity-45 hover:opacity-100 scale-95 hover:scale-100",
@@ -254,7 +268,7 @@ export function StreamPlayer({
           <button
             type="button"
             onClick={handleNextServer}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-primary/25 hover:bg-primary/40 text-white backdrop-blur-md border border-primary/40 transition-all hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold bg-primary/25 hover:bg-primary/40 text-white backdrop-blur-md border border-primary/40 transition-all hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
             title="Next Server (Press N or S)"
           >
             <SkipForward className="h-3.5 w-3.5 text-primary" />
@@ -266,11 +280,13 @@ export function StreamPlayer({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-black/80 hover:bg-black/95 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold bg-black/80 hover:bg-black/95 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
                 aria-label="Switch Server"
               >
                 <Server className="h-3.5 w-3.5 text-primary" />
-                <span>{selectedServer.name}</span>
+                <span className="max-w-[75px] sm:max-w-none truncate">
+                  {selectedServer.name}
+                </span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -316,15 +332,39 @@ export function StreamPlayer({
 
           <AudioLanguageToggle variant="compact" />
 
+          {/* Fullscreen Button for Mobile & Desktop */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-black/80 hover:bg-black/95 text-white/80 hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-2xl cursor-pointer"
+                aria-label={
+                  isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"
+                }
+              >
+                {isFullscreen ? (
+                  <Minimize className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                ) : (
+                  <Maximize className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>{isFullscreen ? "Exit Fullscreen (F)" : "Fullscreen (F)"}</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Close Player Button */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 type="button"
                 onClick={onClose}
-                className="h-9 w-9 rounded-full bg-black/80 hover:bg-rose-600/90 text-white/80 hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-2xl cursor-pointer"
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-black/80 hover:bg-rose-600/90 text-white/80 hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-2xl cursor-pointer"
                 aria-label="Close player"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="left">
@@ -354,7 +394,12 @@ export function StreamPlayer({
               <iframe
                 key={currentIframeKey}
                 src={iframeSrcWithKey ?? undefined}
-                className="w-full h-full border-0 select-none"
+                className={cn(
+                  "border-0 select-none",
+                  isFullscreen
+                    ? "w-full h-full"
+                    : "w-full aspect-video max-h-full sm:h-full sm:aspect-auto",
+                )}
                 referrerPolicy="no-referrer"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen

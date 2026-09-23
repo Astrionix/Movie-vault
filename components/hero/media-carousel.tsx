@@ -20,6 +20,10 @@ import { CarouselDetails } from "./carousel-details";
 import { MediaCarouselProps } from "./types";
 
 export function MediaCarousel({ items }: MediaCarouselProps) {
+  if (!items || items.length === 0) {
+    return null;
+  }
+
   const [desktopCarouselApi, setDesktopCarouselApi] = useState<CarouselApi>();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [expandedOverview, setExpandedOverview] = useState<

@@ -16,18 +16,12 @@ export const MAGIC_LINK_RESEND_SUBJECT =
   "Movie Vault - Here's your magic link to sign in";
 
 export const TMDB_BASE_URL = "https://api.tmdb.org/3";
+
 let TMDB_API_KEY: string | undefined;
 if (!isBrowser) {
   TMDB_API_KEY = process.env.TMDB_API_KEY;
   if (!TMDB_API_KEY) {
-    console.error(
-      "❌ Server Error: TMDB_API_KEY is missing in environment variables",
-    );
-    if (process.env.NODE_ENV === "development") {
-      throw new Error(
-        "TMDB API key is missing - please add it to .env.local file",
-      );
-    }
+    console.warn("⚠️ Warning: TMDB_API_KEY is missing in environment variables");
   }
 } else {
   TMDB_API_KEY = undefined;

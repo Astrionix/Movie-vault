@@ -31,25 +31,37 @@ const isTalkShow = (item: MediaItem): boolean => {
 };
 
 export async function generateStaticParams() {
-  const [popular, topRated, onTheAir] = await Promise.all([
-    fetchTMDBData("/tv/popular", { language: "en-US" }),
-    fetchTMDBData("/tv/top_rated", { language: "en-US" }),
-    fetchTMDBData("/tv/on_the_air", { language: "en-US" }),
-  ]);
+  if (!process.env.TMDB_API_KEY) {
+    console.warn(
+      "⚠️ TMDB_API_KEY is not set during build. Skipping static pre-rendering.",
+    );
+    return [];
+  }
 
-  const allShows = [
-    ...((popular.results as MediaItem[]) || []),
-    ...((topRated.results as MediaItem[]) || []),
-    ...((onTheAir.results as MediaItem[]) || []),
-  ].filter((show) => !isTalkShow(show));
+  try {
+    const [popular, topRated, onTheAir] = await Promise.all([
+      fetchTMDBData("/tv/popular", { language: "en-US" }),
+      fetchTMDBData("/tv/top_rated", { language: "en-US" }),
+      fetchTMDBData("/tv/on_the_air", { language: "en-US" }),
+    ]);
 
-  const uniqueShows = Array.from(
-    new Map(allShows.map((show) => [show.id, show])).values(),
-  );
+    const allShows = [
+      ...((popular.results as MediaItem[]) || []),
+      ...((topRated.results as MediaItem[]) || []),
+      ...((onTheAir.results as MediaItem[]) || []),
+    ].filter((show) => !isTalkShow(show));
 
-  return uniqueShows.slice(0, 60).map((show) => ({
-    id: show.id.toString(),
-  }));
+    const uniqueShows = Array.from(
+      new Map(allShows.map((show) => [show.id, show])).values(),
+    );
+
+    return uniqueShows.slice(0, 60).map((show) => ({
+      id: show.id.toString(),
+    }));
+  } catch (error) {
+    console.warn("⚠️ Failed to generate static params for tv shows:", error);
+    return [];
+  }
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {

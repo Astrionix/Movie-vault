@@ -22,27 +22,39 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const [popular, topRated, nowPlaying] = await Promise.all([
-    fetchTMDBData("/movie/popular", { language: "en-US", region: "US" }),
-    fetchTMDBData("/movie/top_rated", { language: "en-US", region: "US" }),
-    fetchTMDBData("/movie/now_playing", { language: "en-US", region: "US" }),
-  ]);
+  if (!process.env.TMDB_API_KEY) {
+    console.warn(
+      "⚠️ TMDB_API_KEY is not set during build. Skipping static pre-rendering.",
+    );
+    return [];
+  }
 
-  const allMovies = [
-    ...((popular.results as MediaItem[]) || []),
-    ...((topRated.results as MediaItem[]) || []),
-    ...((nowPlaying.results as MediaItem[]) || []),
-  ];
+  try {
+    const [popular, topRated, nowPlaying] = await Promise.all([
+      fetchTMDBData("/movie/popular", { language: "en-US", region: "US" }),
+      fetchTMDBData("/movie/top_rated", { language: "en-US", region: "US" }),
+      fetchTMDBData("/movie/now_playing", { language: "en-US", region: "US" }),
+    ]);
 
-  // deduplicate by id
-  const uniqueMovies = Array.from(
-    new Map(allMovies.map((movie) => [movie.id, movie])).values(),
-  );
+    const allMovies = [
+      ...((popular.results as MediaItem[]) || []),
+      ...((topRated.results as MediaItem[]) || []),
+      ...((nowPlaying.results as MediaItem[]) || []),
+    ];
 
-  // pre-render top 60 movies at build time
-  return uniqueMovies.slice(0, 60).map((movie) => ({
-    id: movie.id.toString(),
-  }));
+    // deduplicate by id
+    const uniqueMovies = Array.from(
+      new Map(allMovies.map((movie) => [movie.id, movie])).values(),
+    );
+
+    // pre-render top 60 movies at build time
+    return uniqueMovies.slice(0, 60).map((movie) => ({
+      id: movie.id.toString(),
+    }));
+  } catch (error) {
+    console.warn("⚠️ Failed to generate static params for movies:", error);
+    return [];
+  }
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
@@ -58,8 +70,9 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 async function fetchDetails(id: string) {
   try {
+    const apiKey = process.env.TMDB_API_KEY;
     const response = await fetch(
-      `https://api.tmdb.org/3/movie/${id}?api_key=${process.env.TMDB_API_KEY}&language=en-US&append_to_response=videos,images,credits,recommendations,similar,keywords,reviews,release_dates`,
+      `https://api.tmdb.org/3/movie/${id}?api_key=${apiKey}&language=en-US&append_to_response=videos,images,credits,recommendations,similar,keywords,reviews,release_dates`,
       { next: { revalidate: 3600 } },
     );
     if (!response.ok) {

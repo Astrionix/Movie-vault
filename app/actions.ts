@@ -83,9 +83,16 @@ export async function buildItemsWithCategories<
     return [];
   }
 
+  const validItems = items.filter((item): item is T =>
+    Boolean(item && typeof item === "object"),
+  );
+  if (validItems.length === 0) {
+    return [];
+  }
+
   const genres = await getCategories(type);
 
-  const processedItems = items.map((item) => {
+  const processedItems = validItems.map((item) => {
     const itemGenres = genres.filter((genre) =>
       item.genre_ids?.includes(genre.id),
     );
@@ -392,7 +399,13 @@ export async function fetchTMDBData<T = MediaItem>(
 ): Promise<TmdbResponse<T>> {
   const apiKey = process.env.TMDB_API_KEY;
   if (!apiKey) {
-    throw new Error("TMDB API key is missing");
+    console.warn(`[TMDB] Missing API key for endpoint: ${endpoint}`);
+    return {
+      page: 1,
+      results: [] as unknown as T[],
+      total_pages: 0,
+      total_results: 0,
+    };
   }
 
   const url = new URL(`${TMDB_BASE_URL}${endpoint}`);

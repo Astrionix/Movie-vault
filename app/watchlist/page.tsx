@@ -18,10 +18,11 @@ export default async function WatchlistPage() {
   const mediaItems = await Promise.all(
     watchlistItems.map(async (item) => {
       try {
+        const apiKey = process.env.TMDB_API_KEY;
         const url =
           item.mediaType === "movie"
-            ? `https://api.tmdb.org/3/movie/${item.contentId}?api_key=${process.env.TMDB_API_KEY}&language=en-US`
-            : `https://api.tmdb.org/3/tv/${item.contentId}?api_key=${process.env.TMDB_API_KEY}&language=en-US`;
+            ? `https://api.tmdb.org/3/movie/${item.contentId}?api_key=${apiKey}&language=en-US`
+            : `https://api.tmdb.org/3/tv/${item.contentId}?api_key=${apiKey}&language=en-US`;
 
         const response = await fetch(url, { next: { revalidate: 3600 } });
         if (!response.ok) {

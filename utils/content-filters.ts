@@ -81,12 +81,16 @@ const HIGH_POPULARITY_THRESHOLD = 1000;
  * @param item Media item to check
  * @returns true if the romance content should be allowed (highly rated and popular)
  */
-export function shouldAllowRomanceContent(item: {
+export function shouldAllowRomanceContent(item?: {
   genre_ids?: number[];
   genres?: { id: number }[];
   vote_average?: number;
   vote_count?: number;
 }): boolean {
+  if (!item) {
+    return false;
+  }
+
   const hasRomanceGenre =
     item.genre_ids?.includes(ROMANCE_GENRE_ID) ||
     item.genres?.some((genre) => genre.id === ROMANCE_GENRE_ID);

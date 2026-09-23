@@ -5,8 +5,9 @@ import { SeasonDetails, TvShowDetails } from "@/utils/typings";
  */
 export async function fetchTVShowDetails(id: string): Promise<TvShowDetails> {
   try {
+    const apiKey = process.env.TMDB_API_KEY;
     const response = await fetch(
-      `https://api.tmdb.org/3/tv/${id}?api_key=${process.env.TMDB_API_KEY}&language=en-US&append_to_response=videos,images,credits,recommendations,similar,keywords,reviews,content_ratings,aggregate_credits`,
+      `https://api.tmdb.org/3/tv/${id}?api_key=${apiKey}&language=en-US&append_to_response=videos,images,credits,recommendations,similar,keywords,reviews,content_ratings,aggregate_credits`,
       { next: { revalidate: 3600 } },
     );
     if (!response.ok) {
@@ -51,8 +52,9 @@ export async function fetchSeasonDetailsServer(
   seasonNumber: number,
 ): Promise<SeasonDetails | null> {
   try {
+    const apiKey = process.env.TMDB_API_KEY;
     const response = await fetch(
-      `https://api.tmdb.org/3/tv/${tvId}/season/${seasonNumber}?api_key=${process.env.TMDB_API_KEY}&language=en-US`,
+      `https://api.tmdb.org/3/tv/${tvId}/season/${seasonNumber}?api_key=${apiKey}&language=en-US`,
       { next: { revalidate: 3600 } },
     );
     if (!response.ok) {

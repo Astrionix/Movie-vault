@@ -83,9 +83,8 @@ export function AudioLanguageToggle({
         >
           <Globe className="h-3.5 w-3.5 text-primary" />
           <span className="font-semibold">
-            {audioLanguage === "auto"
-              ? "Audio: Auto"
-              : `Audio: ${currentOption.nativeLabel}`}
+            <span className="hidden sm:inline">Audio: </span>
+            {audioLanguage === "auto" ? "Auto" : currentOption.nativeLabel}
           </span>
           {audioLanguage === "te" && (
             <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
