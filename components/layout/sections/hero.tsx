@@ -43,10 +43,12 @@ export const HeroSection = () => {
   }, [adBlockDetected, router]);
 
   return (
-    <section className="relative w-full min-h-[100vh] md:min-h-screen overflow-x-hidden">
+    <section className="relative w-full min-h-[100vh] md:min-h-screen overflow-x-hidden bg-[#030014]">
+      {/* Ambient background glow filling entire screen edge-to-edge */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_120%_85%_at_50%_35%,rgba(147,51,234,0.35),rgba(219,39,119,0.2),rgba(3,0,20,0.95))]" />
       <div className="absolute inset-0 z-0">
         <div
-          className="w-full h-full flex flex-col relative opacity-50 overflow-hidden"
+          className="w-full h-full flex flex-col relative opacity-85 overflow-hidden"
           suppressHydrationWarning
         >
           <NeuralNetworkBackground />

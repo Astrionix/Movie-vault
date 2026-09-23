@@ -2,7 +2,7 @@
 
 import { useGSAP } from "@gsap/react";
 import { shaderMaterial } from "@react-three/drei";
-import { Canvas, extend, useFrame } from "@react-three/fiber";
+import { Canvas, extend, useFrame, useThree } from "@react-three/fiber";
 import gsap from "gsap";
 import React, { useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -155,8 +155,10 @@ const fragmentShader = `
   }
 
   void main() {
-    vec2 uv = vUv * 2.0 - 1.0; uv.y *= -1.0;
-    gl_FragColor = cppn_fn(uv, 0.1 * sin(0.3 * iTime), 0.1 * sin(0.69 * iTime), 0.1 * sin(0.44 * iTime));
+    vec2 uv = vUv * 2.0 - 1.0;
+    uv.y *= -1.0;
+    vec2 coord = uv * vec2(0.55, 0.7);
+    gl_FragColor = cppn_fn(coord, 0.1 * sin(0.3 * iTime), 0.1 * sin(0.69 * iTime), 0.1 * sin(0.44 * iTime));
   }
 `;
 
@@ -184,6 +186,8 @@ function ShaderPlane() {
     THREE.ShaderMaterial & { iTime: number; iResolution: THREE.Vector2 }
   >(null!);
   const lastSizeRef = useRef({ width: 0, height: 0 });
+  const { viewport, camera } = useThree();
+  const currentViewport = viewport.getCurrentViewport(camera, [0, -0.4, -0.5]);
 
   useFrame((state) => {
     if (!materialRef.current) return;
@@ -199,9 +203,12 @@ function ShaderPlane() {
     }
   });
 
+  const planeWidth = Math.max(currentViewport.width * 1.5, 12);
+  const planeHeight = Math.max(currentViewport.height * 2.2, 10);
+
   return (
-    <mesh ref={meshRef} position={[0, -0.75, -0.5]}>
-      <planeGeometry args={[4, 4]} />
+    <mesh ref={meshRef} position={[0, -0.4, -0.5]}>
+      <planeGeometry args={[planeWidth, planeHeight]} />
       <cPPNShaderMaterial ref={materialRef} side={THREE.DoubleSide} />
     </mesh>
   );
@@ -236,7 +243,7 @@ export function ShaderBackground() {
   return (
     <div
       ref={canvasRef}
-      className="bg-black absolute inset-0 -z-10 w-full h-full opacity-0"
+      className="bg-[#030014] absolute inset-0 -z-10 w-full h-full opacity-0"
       aria-hidden
     >
       <Canvas
