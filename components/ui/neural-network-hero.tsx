@@ -157,8 +157,11 @@ const fragmentShader = `
   void main() {
     vec2 uv = vUv * 2.0 - 1.0;
     uv.y *= -1.0;
-    vec2 coord = uv * vec2(0.55, 0.7);
-    gl_FragColor = cppn_fn(coord, 0.1 * sin(0.3 * iTime), 0.1 * sin(0.69 * iTime), 0.1 * sin(0.44 * iTime));
+    vec4 col = cppn_fn(uv, 0.1 * sin(0.3 * iTime), 0.1 * sin(0.69 * iTime), 0.1 * sin(0.44 * iTime));
+    float fadeX = smoothstep(1.0, 0.65, abs(uv.x));
+    float fadeY = smoothstep(1.0, 0.65, abs(uv.y));
+    float vignette = fadeX * fadeY;
+    gl_FragColor = vec4(col.rgb * vignette, vignette);
   }
 `;
 
@@ -186,8 +189,6 @@ function ShaderPlane() {
     THREE.ShaderMaterial & { iTime: number; iResolution: THREE.Vector2 }
   >(null!);
   const lastSizeRef = useRef({ width: 0, height: 0 });
-  const { viewport, camera } = useThree();
-  const currentViewport = viewport.getCurrentViewport(camera, [0, -0.4, -0.5]);
 
   useFrame((state) => {
     if (!materialRef.current) return;
@@ -203,13 +204,14 @@ function ShaderPlane() {
     }
   });
 
-  const planeWidth = Math.max(currentViewport.width * 1.5, 12);
-  const planeHeight = Math.max(currentViewport.height * 2.2, 10);
-
   return (
-    <mesh ref={meshRef} position={[0, -0.4, -0.5]}>
-      <planeGeometry args={[planeWidth, planeHeight]} />
-      <cPPNShaderMaterial ref={materialRef} side={THREE.DoubleSide} />
+    <mesh ref={meshRef} position={[0, -0.65, -0.5]}>
+      <planeGeometry args={[6.5, 5]} />
+      <cPPNShaderMaterial
+        ref={materialRef}
+        transparent
+        side={THREE.DoubleSide}
+      />
     </mesh>
   );
 }
@@ -243,21 +245,21 @@ export function ShaderBackground() {
   return (
     <div
       ref={canvasRef}
-      className="bg-[#030014] absolute inset-0 -z-10 w-full h-full opacity-0"
+      className="absolute inset-0 -z-10 w-full h-full opacity-0"
       aria-hidden
     >
       <Canvas
         camera={camera}
         gl={{
           antialias: false,
-          alpha: false,
+          alpha: true,
           powerPreference: "high-performance",
           depth: false,
           stencil: false,
         }}
         dpr={[1, 2]}
         resize={{ scroll: false, debounce: { scroll: 50, resize: 0 } }}
-        style={{ width: "100%", height: "100%" }}
+        style={{ width: "100%", height: "100%", background: "transparent" }}
         onCreated={({ gl, size }) => {
           if (size.width > 0 && size.height > 0) {
             gl.setSize(size.width, size.height);

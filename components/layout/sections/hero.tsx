@@ -43,17 +43,74 @@ export const HeroSection = () => {
   }, [adBlockDetected, router]);
 
   return (
-    <section className="relative w-full min-h-[100vh] md:min-h-screen overflow-x-hidden bg-[#030014]">
-      {/* Ambient background glow filling entire screen edge-to-edge */}
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_120%_85%_at_50%_35%,rgba(147,51,234,0.35),rgba(219,39,119,0.2),rgba(3,0,20,0.95))]" />
-      <div className="absolute inset-0 z-0">
+    <section className="relative w-full min-h-[100vh] md:min-h-screen overflow-x-hidden bg-[#070314]">
+      {/* 1. Base deep dark tone */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[#070314]" />
+
+      {/* 2. Side glows behind the neural network for edge-to-edge ambient base */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(circle 800px at 0% 40%, rgba(126, 34, 206, 0.3) 0%, transparent 70%), radial-gradient(circle 800px at 100% 40%, rgba(192, 38, 211, 0.25) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* 3. Animated 3D Neural Network floating behind the foreground radial spotlight */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
         <div
-          className="w-full h-full flex flex-col relative opacity-85 overflow-hidden"
+          className="w-full h-full flex flex-col relative opacity-50 overflow-hidden mix-blend-screen"
           suppressHydrationWarning
         >
           <NeuralNetworkBackground />
         </div>
       </div>
+
+      {/* 4. Radiant Center Radial Gradient Spotlight - High-luminance violet & indigo aura */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{
+          background:
+            "radial-gradient(ellipse 85% 65% at 50% 30%, rgba(147, 51, 234, 0.55) 0%, rgba(126, 34, 206, 0.38) 32%, rgba(79, 70, 229, 0.18) 60%, transparent 82%)",
+        }}
+      />
+
+      {/* 5. Core Spotlight - luminous soft violet & fuchsia glow directly highlighting the title */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{
+          background:
+            "radial-gradient(circle 480px at 50% 32%, rgba(216, 180, 254, 0.35) 0%, rgba(217, 70, 239, 0.28) 35%, rgba(147, 51, 234, 0.12) 65%, transparent 80%)",
+        }}
+      />
+
+      {/* 6. High-saturation inner flare for crisp radial gradient definition */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{
+          background:
+            "radial-gradient(circle 260px at 50% 30%, rgba(232, 121, 249, 0.38) 0%, rgba(168, 85, 247, 0.18) 55%, transparent 80%)",
+        }}
+      />
+
+      {/* 7. Edge-to-edge horizontal side ambient radiance so widescreen displays are never black */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{
+          background:
+            "radial-gradient(ellipse 65% 55% at 0% 45%, rgba(147, 51, 234, 0.32) 0%, transparent 65%), radial-gradient(ellipse 65% 55% at 100% 45%, rgba(219, 39, 119, 0.28) 0%, transparent 65%)",
+        }}
+      />
+
+      {/* 8. Top & bottom smooth atmospheric transitions */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 30% at 50% 0%, rgba(168, 85, 247, 0.3) 0%, transparent 70%)",
+        }}
+      />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 z-[1] bg-gradient-to-b from-transparent to-[#070314]" />
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pointer-events-none select-none">
         <div className="flex flex-col items-center justify-center min-h-[80vh] lg:min-h-[85vh] gap-6 sm:gap-8 pt-24 pb-8 md:pt-28 md:pb-16">
           <div className="flex flex-col items-center text-center space-y-6 sm:space-y-8 max-w-6xl">
