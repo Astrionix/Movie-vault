@@ -1,4 +1,5 @@
 import { PageBackground } from "@/components/layout/page-background";
+import { StreamingHub } from "@/components/content/streaming-hub";
 import {
   getRecommendedRowsForPage,
   getRowConfig,
@@ -137,6 +138,17 @@ export default async function Home() {
       if (!config) return null;
 
       const customTitles: Record<string, string> = {
+        "netflix-hits": "Popular on Netflix",
+        "disney-picks": "Best of Disney+",
+        "prime-hits": "Top on Prime Video",
+        "apple-originals": "Apple TV+ Originals",
+        "max-exclusives": "HBO Max Exclusives",
+        "hulu-hits": "Trending on Hulu",
+        "peacock-picks": "Stream on Peacock",
+        "netflix-series": "Top Netflix Series",
+        "apple-series": "Apple TV+ Series",
+        "prime-series": "Prime Video Series",
+        "hbo-series": "Legendary HBO Series",
         "top-rated-movies": "Top Rated Movies",
         "top-rated-tvshows": "Top Rated TV Shows",
         "early-2000s-movies": "Early 2000s Movies",
@@ -184,7 +196,7 @@ export default async function Home() {
           return `${baseUrl}/browse?type=${category}`;
         } else if (category.startsWith("year-")) {
           return `${baseUrl}/browse?year=${category.replace("year-", "")}`;
-        } else if (category.startsWith("tv-")) {
+        } else if (category.startsWith("tv-") || category.startsWith("ott-")) {
           return `${baseUrl}/browse?filter=${category}`;
         } else {
           return `${baseUrl}/browse?filter=${category}`;
@@ -226,6 +238,10 @@ export default async function Home() {
         >
           <StreamingMediaCarousel itemsPromise={heroCarouselPromise} />
         </Suspense>
+
+        {/* Streaming Services Interactive Hub */}
+        <StreamingHub />
+
         <div className="relative z-10 min-h-[200vh]">
           <LazyContentRowsDynamic
             rows={contentRowsConfig}

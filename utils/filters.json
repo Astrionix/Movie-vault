@@ -1,5 +1,49 @@
 {
   "rowConfigurations": {
+    "netflix-hits": {
+      "category": "ott-netflix-movies",
+      "mediaType": "movie"
+    },
+    "disney-picks": {
+      "category": "ott-disney-movies",
+      "mediaType": "movie"
+    },
+    "prime-hits": {
+      "category": "ott-prime-movies",
+      "mediaType": "movie"
+    },
+    "apple-originals": {
+      "category": "ott-apple-movies",
+      "mediaType": "movie"
+    },
+    "max-exclusives": {
+      "category": "ott-max-movies",
+      "mediaType": "movie"
+    },
+    "hulu-hits": {
+      "category": "ott-hulu-movies",
+      "mediaType": "movie"
+    },
+    "peacock-picks": {
+      "category": "ott-peacock-movies",
+      "mediaType": "movie"
+    },
+    "netflix-series": {
+      "category": "tv-network-netflix",
+      "mediaType": "tv"
+    },
+    "apple-series": {
+      "category": "tv-network-apple",
+      "mediaType": "tv"
+    },
+    "prime-series": {
+      "category": "tv-network-prime",
+      "mediaType": "tv"
+    },
+    "hbo-series": {
+      "category": "tv-network-hbo",
+      "mediaType": "tv"
+    },
     "popular-movies": {
       "category": "popular",
       "mediaType": "movie"
@@ -383,9 +427,18 @@
   },
   "pageRowRecommendations": {
     "home": [
+      "netflix-hits",
       "top-rated-movies",
+      "disney-picks",
       "top-rated-tvshows",
+      "prime-hits",
+      "popular-movies",
+      "apple-originals",
+      "popular-tvshows",
+      "max-exclusives",
+      "netflix-series",
       "early-2000s-movies",
+      "apple-series",
       "popular-movies",
       "popular-tvshows",
       "nolan-films",
@@ -915,6 +968,104 @@
     ],
     "special": [
       {
+        "id": "ott-netflix-movies",
+        "title": "Popular on Netflix",
+        "mediaType": "movie",
+        "params": {
+          "endpoint": "/discover/movie",
+          "with_watch_providers": "8",
+          "watch_region": "US",
+          "vote_count.gte": "100",
+          "vote_average.gte": "6.0",
+          "without_genres": "99,10770",
+          "sort_by": "popularity.desc"
+        }
+      },
+      {
+        "id": "ott-disney-movies",
+        "title": "Best of Disney+",
+        "mediaType": "movie",
+        "params": {
+          "endpoint": "/discover/movie",
+          "with_watch_providers": "337",
+          "watch_region": "US",
+          "vote_count.gte": "100",
+          "vote_average.gte": "6.0",
+          "without_genres": "99,10770",
+          "sort_by": "popularity.desc"
+        }
+      },
+      {
+        "id": "ott-prime-movies",
+        "title": "Top on Prime Video",
+        "mediaType": "movie",
+        "params": {
+          "endpoint": "/discover/movie",
+          "with_watch_providers": "9",
+          "watch_region": "US",
+          "vote_count.gte": "100",
+          "vote_average.gte": "6.0",
+          "without_genres": "99,10770",
+          "sort_by": "popularity.desc"
+        }
+      },
+      {
+        "id": "ott-apple-movies",
+        "title": "Apple TV+ Originals",
+        "mediaType": "movie",
+        "params": {
+          "endpoint": "/discover/movie",
+          "with_watch_providers": "350",
+          "watch_region": "US",
+          "vote_count.gte": "40",
+          "vote_average.gte": "6.0",
+          "without_genres": "99,10770",
+          "sort_by": "popularity.desc"
+        }
+      },
+      {
+        "id": "ott-max-movies",
+        "title": "HBO Max Exclusives",
+        "mediaType": "movie",
+        "params": {
+          "endpoint": "/discover/movie",
+          "with_watch_providers": "1899|384",
+          "watch_region": "US",
+          "vote_count.gte": "100",
+          "vote_average.gte": "6.0",
+          "without_genres": "99,10770",
+          "sort_by": "popularity.desc"
+        }
+      },
+      {
+        "id": "ott-hulu-movies",
+        "title": "Trending on Hulu",
+        "mediaType": "movie",
+        "params": {
+          "endpoint": "/discover/movie",
+          "with_watch_providers": "15",
+          "watch_region": "US",
+          "vote_count.gte": "100",
+          "vote_average.gte": "6.0",
+          "without_genres": "99,10770",
+          "sort_by": "popularity.desc"
+        }
+      },
+      {
+        "id": "ott-peacock-movies",
+        "title": "Stream on Peacock",
+        "mediaType": "movie",
+        "params": {
+          "endpoint": "/discover/movie",
+          "with_watch_providers": "386",
+          "watch_region": "US",
+          "vote_count.gte": "100",
+          "vote_average.gte": "6.0",
+          "without_genres": "99,10770",
+          "sort_by": "popularity.desc"
+        }
+      },
+      {
         "id": "critically-acclaimed",
         "title": "Critically Acclaimed Movies",
         "mediaType": "movie",
@@ -1341,6 +1492,30 @@
           "with_networks": "213",
           "vote_count.gte": "100",
           "vote_average.gte": "6.5",
+          "sort_by": "popularity.desc"
+        }
+      },
+      {
+        "id": "tv-network-apple",
+        "title": "Apple TV+ Series",
+        "mediaType": "tv",
+        "params": {
+          "endpoint": "/discover/tv",
+          "with_networks": "2552",
+          "vote_count.gte": "40",
+          "vote_average.gte": "6.5",
+          "sort_by": "popularity.desc"
+        }
+      },
+      {
+        "id": "tv-network-prime",
+        "title": "Prime Video Series",
+        "mediaType": "tv",
+        "params": {
+          "endpoint": "/discover/tv",
+          "with_networks": "1024",
+          "vote_count.gte": "40",
+          "vote_average.gte": "6.0",
           "sort_by": "popularity.desc"
         }
       },

@@ -13,6 +13,22 @@ import { MediaItem } from "./typings";
  * @returns Human-readable title string
  */
 export function generateRowTitle(rowId: string): string {
+  const customMap: Record<string, string> = {
+    "netflix-hits": "Popular on Netflix",
+    "disney-picks": "Best of Disney+",
+    "prime-hits": "Top on Prime Video",
+    "apple-originals": "Apple TV+ Originals",
+    "max-exclusives": "HBO Max Exclusives",
+    "hulu-hits": "Trending on Hulu",
+    "peacock-picks": "Stream on Peacock",
+    "netflix-series": "Top Netflix Series",
+    "apple-series": "Apple TV+ Series",
+    "prime-series": "Prime Video Series",
+    "hbo-series": "Legendary HBO Series",
+  };
+  if (customMap[rowId]) {
+    return customMap[rowId];
+  }
   return rowId
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -65,6 +81,11 @@ export function generateRowHref(
     return category === "popular"
       ? `/${urlPath}/browse`
       : `/${urlPath}/browse?type=${category}`;
+  } else if (
+    category.startsWith("ott-") ||
+    category.startsWith("tv-network-")
+  ) {
+    return `/${urlPath}/browse?filter=${category}`;
   } else {
     return `/${urlPath}/browse?filter=${category.replace(/^(critically-|hidden-|blockbuster-|award-|cult-|indie-)/, "")}`;
   }
