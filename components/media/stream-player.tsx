@@ -37,7 +37,6 @@ import {
   Server,
   ShieldCheck,
   SkipForward,
-  X,
 } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -352,23 +351,6 @@ export function StreamPlayer({
             </TooltipTrigger>
             <TooltipContent side="left">
               <p>{isFullscreen ? "Exit Fullscreen (F)" : "Fullscreen (F)"}</p>
-            </TooltipContent>
-          </Tooltip>
-
-          {/* Close Player Button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={onClose}
-                className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-black/80 hover:bg-rose-600/90 text-white/80 hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-2xl cursor-pointer"
-                aria-label="Close player"
-              >
-                <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              <p>Close player (Esc)</p>
             </TooltipContent>
           </Tooltip>
         </div>
