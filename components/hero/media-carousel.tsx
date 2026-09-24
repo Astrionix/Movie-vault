@@ -103,7 +103,7 @@ export function MediaCarousel({ items }: MediaCarouselProps) {
           <CarouselContent className="!ml-0 h-full">
             {items.map((item, index) => (
               <CarouselItem key={item.id} className="pl-0 h-full">
-                <div className="relative w-full h-full z-50">
+                <div className="relative w-full h-full">
                   <Image
                     key={`backdrop-${item.id}-${index}`}
                     src={`https://image.tmdb.org/t/p/original${item.backdrop_path}`}
@@ -114,23 +114,36 @@ export function MediaCarousel({ items }: MediaCarouselProps) {
                     width={1920}
                     height={1080}
                     priority={index <= 2}
-                    className="object-cover brightness-[0.3] z-50 w-full h-full"
+                    className="object-cover brightness-[0.35] w-full h-full"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
                 </div>
               </CarouselItem>
             ))}
           </CarouselContent>
         </Carousel>
 
-        <CarouselDetails
-          current={items[currentIndex]}
-          items={items}
-          onPosterClick={handlePosterClick}
+        {/* Smooth bottom shade blending hero carousel into content below */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-48 sm:h-64 lg:h-80 z-20"
+          style={{
+            background:
+              "linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.25) 30%, rgba(0, 0, 0, 0.7) 65%, rgba(0, 0, 0, 0.95) 88%, #000000 100%)",
+          }}
         />
 
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 hidden md:flex space-x-2 z-10">
+
+
+        <div className="relative z-30">
+          <CarouselDetails
+            current={items[currentIndex]}
+            items={items}
+            onPosterClick={handlePosterClick}
+          />
+        </div>
+
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 hidden md:flex space-x-2 z-30">
           {items.map((_, index) => (
             <button
               key={index}

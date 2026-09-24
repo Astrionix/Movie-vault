@@ -106,22 +106,23 @@ const PLATFORMS: StreamingPlatform[] = [
 
 export function StreamingHub() {
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 mb-8">
+    <section className="mx-4 md:mx-8 mt-6 md:mt-8 mb-10">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3 sm:mb-4">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center size-7 rounded-lg bg-primary/10 border border-primary/20 text-primary">
-            <Sparkles className="size-4" />
-          </div>
-          <div>
-            <h2 className="text-lg sm:text-xl font-medium tracking-tight text-white/95">
+      <div className="content-row-header mb-5 flex items-end justify-between px-1">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center size-6 rounded-md bg-primary/10 border border-primary/20 text-primary">
+              <Sparkles className="size-3.5" />
+            </div>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
               Browse by Streaming Service
             </h2>
-            <p className="text-xs text-muted-foreground hidden sm:block">
-              Explore curated releases and originals from top OTT platforms
-            </p>
           </div>
+          <div className="h-1 w-12 bg-primary/60 rounded-full" />
         </div>
+        <p className="text-xs text-muted-foreground hidden sm:block pb-1">
+          Explore curated releases and originals from top OTT platforms
+        </p>
       </div>
 
       {/* Grid of Streaming Cards */}

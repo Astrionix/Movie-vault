@@ -1,5 +1,4 @@
 import { PageBackground } from "@/components/layout/page-background";
-import { StreamingHub } from "@/components/content/streaming-hub";
 import {
   getRecommendedRowsForPage,
   getRowConfig,
@@ -238,9 +237,6 @@ export default async function Home() {
         >
           <StreamingMediaCarousel itemsPromise={heroCarouselPromise} />
         </Suspense>
-
-        {/* Streaming Services Interactive Hub */}
-        <StreamingHub />
 
         <div className="relative z-10 min-h-[200vh]">
           <LazyContentRowsDynamic
