@@ -1,5 +1,6 @@
 import { Movie, TmdbResponse, TvShow } from "@/utils/typings";
 import { NextResponse } from "next/server";
+import { parseLanguageQuery } from "@/lib/search-language";
 
 interface Person {
   id: number;
@@ -38,56 +39,125 @@ export async function GET(request: Request) {
   }
 
   try {
-    const baseUrl = "https://api.tmdb.org/3/search";
-    const commonParams = new URLSearchParams({
-      api_key: apiKey,
-      query: query.trim(),
-      page: page,
-      include_adult: "false",
-      language: "en-US",
-    });
+    const trimmedQuery = query.trim();
+    const langMatch = parseLanguageQuery(trimmedQuery);
 
-    // fetch both movies and tv shows in parallel
-    const [movieResponse, tvResponse] = await Promise.all([
-      fetch(`${baseUrl}/movie?${commonParams}`),
-      fetch(`${baseUrl}/tv?${commonParams}`),
-    ]);
+    let movieData: TmdbResponse<Movie> = {
+      results: [],
+      page: 1,
+      total_pages: 1,
+      total_results: 0,
+    };
+    let tvData: TmdbResponse<TvShow> = {
+      results: [],
+      page: 1,
+      total_pages: 1,
+      total_results: 0,
+    };
 
-    if (!movieResponse.ok || !tvResponse.ok) {
-      console.error(
-        `TMDB API error: Movies ${movieResponse.status}, TV ${tvResponse.status}`,
-      );
-      return NextResponse.json(
-        { error: "Failed to fetch search results from TMDB" },
-        { status: movieResponse.ok ? tvResponse.status : movieResponse.status },
-      );
+    if (langMatch?.isPureLanguage) {
+      // Pure language/industry discovery (e.g., "telugu movies", "hindi", "kdrama")
+      const discoverBaseUrl = "https://api.tmdb.org/3/discover";
+      const discoverParams = new URLSearchParams({
+        api_key: apiKey,
+        with_original_language: langMatch.languageCode,
+        sort_by: "popularity.desc",
+        page: page,
+        include_adult: "false",
+      });
+
+      if (langMatch.genreId) {
+        discoverParams.append("with_genres", langMatch.genreId.toString());
+      }
+
+      const promises: Promise<void>[] = [];
+
+      if (langMatch.mediaType !== "tv") {
+        promises.push(
+          fetch(`${discoverBaseUrl}/movie?${discoverParams}`).then(
+            async (res) => {
+              if (res.ok) movieData = await res.json();
+            },
+          ),
+        );
+      }
+
+      if (langMatch.mediaType !== "movie") {
+        promises.push(
+          fetch(`${discoverBaseUrl}/tv?${discoverParams}`).then(async (res) => {
+            if (res.ok) tvData = await res.json();
+          }),
+        );
+      }
+
+      await Promise.all(promises);
+    } else {
+      // Search by title or title+language
+      const searchBaseUrl = "https://api.tmdb.org/3/search";
+      const actualQuery = langMatch?.cleanQuery || trimmedQuery;
+      const commonParams = new URLSearchParams({
+        api_key: apiKey,
+        query: actualQuery,
+        page: page,
+        include_adult: "false",
+        language: "en-US",
+      });
+
+      const [movieResponse, tvResponse] = await Promise.all([
+        fetch(`${searchBaseUrl}/movie?${commonParams}`),
+        fetch(`${searchBaseUrl}/tv?${commonParams}`),
+      ]);
+
+      if (movieResponse.ok) {
+        movieData = await movieResponse.json();
+      }
+      if (tvResponse.ok) {
+        tvData = await tvResponse.json();
+      }
     }
-
-    const [movieData, tvData] = await Promise.all([
-      movieResponse.json() as Promise<TmdbResponse<Movie>>,
-      tvResponse.json() as Promise<TmdbResponse<TvShow>>,
-    ]);
 
     // combine and sort results by popularity
     const movies: Movie[] = (movieData.results || [])
-      .filter((movie: Movie) => movie.poster_path) // filter out movies without poster
+      .filter((movie: Movie) => movie.poster_path)
       .map((movie: Movie) => ({
         ...movie,
         media_type: "movie" as const,
       }));
 
     const tvShows: TvShow[] = (tvData.results || [])
-      .filter((show: TvShow) => !show.genre_ids?.includes(10767)) // filter out talk shows
-      .filter((show: TvShow) => show.poster_path) // filter out tv shows without poster
+      .filter((show: TvShow) => !show.genre_ids?.includes(10767))
+      .filter((show: TvShow) => show.poster_path)
       .map((show: TvShow) => ({
         ...show,
         media_type: "tv" as const,
       }));
 
+    // If query specified a language with a title (e.g. "pushpa telugu"), prioritize that language
+    if (langMatch && !langMatch.isPureLanguage) {
+      const targetLang = langMatch.languageCode;
+      movies.sort((a, b) => {
+        const aMatches = a.original_language === targetLang ? 1 : 0;
+        const bMatches = b.original_language === targetLang ? 1 : 0;
+        if (aMatches !== bMatches) return bMatches - aMatches;
+        return (b.popularity || 0) - (a.popularity || 0);
+      });
+      tvShows.sort((a, b) => {
+        const aMatches = a.original_language === targetLang ? 1 : 0;
+        const bMatches = b.original_language === targetLang ? 1 : 0;
+        if (aMatches !== bMatches) return bMatches - aMatches;
+        return (b.popularity || 0) - (a.popularity || 0);
+      });
+    }
+
     // Filter out released movies with zero revenue, then combine and sort by popularity
     const { filterZeroRevenueMovies } = await import("@/utils/content-filters");
     const filteredMovies = filterZeroRevenueMovies(movies);
     const allMedia = [...filteredMovies, ...tvShows].sort((a, b) => {
+      if (langMatch && !langMatch.isPureLanguage) {
+        const aLang = a.original_language === langMatch.languageCode ? 1 : 0;
+        const bLang = b.original_language === langMatch.languageCode ? 1 : 0;
+        if (aLang !== bLang) return bLang - aLang;
+      }
       const popA = a.popularity || 0;
       const popB = b.popularity || 0;
       return popB - popA;
@@ -95,10 +165,14 @@ export async function GET(request: Request) {
 
     // for people, we'll fetch from page 1 only to show in sidebar
     const people: Person[] = [];
-    if (page === "1") {
-      const peopleUrl = new URL(`${baseUrl}/person`);
+    const personQuery = langMatch?.isPureLanguage
+      ? ""
+      : langMatch?.cleanQuery || query.trim();
+
+    if (page === "1" && personQuery) {
+      const peopleUrl = new URL("https://api.tmdb.org/3/search/person");
       peopleUrl.searchParams.append("api_key", apiKey);
-      peopleUrl.searchParams.append("query", query.trim());
+      peopleUrl.searchParams.append("query", personQuery);
       peopleUrl.searchParams.append("page", "1");
       peopleUrl.searchParams.append("include_adult", "false");
 

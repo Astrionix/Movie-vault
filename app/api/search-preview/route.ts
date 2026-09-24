@@ -6,6 +6,7 @@ import {
   TmdbResponseSchema,
   TvShow,
 } from "@/utils/typings";
+import { parseLanguageQuery } from "@/lib/search-language";
 
 type PreviewResult = {
   id: number;
@@ -16,6 +17,7 @@ type PreviewResult = {
   release_date?: string;
   first_air_date?: string;
   genre_names?: string[];
+  original_language?: string;
 };
 
 export async function GET(request: Request) {
@@ -35,30 +37,103 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetch(
-      `https://api.tmdb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query.trim())}&page=1&include_adult=false`,
-    );
+    const trimmedQuery = query.trim();
+    const langMatch = parseLanguageQuery(trimmedQuery);
 
-    if (!response.ok) {
-      console.error(
-        `TMDB API error: ${response.status} ${response.statusText}`,
+    let rawResults: (Movie | TvShow)[] = [];
+
+    if (langMatch?.isPureLanguage) {
+      // Pure language query (e.g. "telugu", "telugu movies", "hindi", "kdrama")
+      const discoverBaseUrl = "https://api.tmdb.org/3/discover";
+      const discoverParams = new URLSearchParams({
+        api_key: apiKey,
+        with_original_language: langMatch.languageCode,
+        sort_by: "popularity.desc",
+        page: "1",
+        include_adult: "false",
+      });
+
+      if (langMatch.genreId) {
+        discoverParams.append("with_genres", langMatch.genreId.toString());
+      }
+
+      if (langMatch.mediaType === "movie") {
+        const res = await fetch(`${discoverBaseUrl}/movie?${discoverParams}`);
+        if (res.ok) {
+          const data = await res.json();
+          rawResults = (data.results || []).map((item: Movie) => ({
+            ...item,
+            media_type: "movie" as const,
+          }));
+        }
+      } else if (langMatch.mediaType === "tv") {
+        const res = await fetch(`${discoverBaseUrl}/tv?${discoverParams}`);
+        if (res.ok) {
+          const data = await res.json();
+          rawResults = (data.results || []).map((item: TvShow) => ({
+            ...item,
+            media_type: "tv" as const,
+          }));
+        }
+      } else {
+        const [movieRes, tvRes] = await Promise.all([
+          fetch(`${discoverBaseUrl}/movie?${discoverParams}`),
+          fetch(`${discoverBaseUrl}/tv?${discoverParams}`),
+        ]);
+
+        const [movieData, tvData] = await Promise.all([
+          movieRes.ok ? movieRes.json() : { results: [] },
+          tvRes.ok ? tvRes.json() : { results: [] },
+        ]);
+
+        const movies = (movieData.results || []).map((item: Movie) => ({
+          ...item,
+          media_type: "movie" as const,
+        }));
+        const tvShows = (tvData.results || []).map((item: TvShow) => ({
+          ...item,
+          media_type: "tv" as const,
+        }));
+
+        rawResults = [...movies, ...tvShows].sort(
+          (a, b) => (b.popularity || 0) - (a.popularity || 0),
+        );
+      }
+    } else {
+      const actualQuery = langMatch?.cleanQuery || trimmedQuery;
+      const response = await fetch(
+        `https://api.tmdb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(actualQuery)}&page=1&include_adult=false`,
       );
-      const errorBody = await response.text();
-      console.error(`TMDB error body: ${errorBody}`);
-      return NextResponse.json(
-        { error: "Failed to fetch search preview from TMDB" },
-        { status: response.status },
-      );
+
+      if (!response.ok) {
+        console.error(
+          `TMDB API error: ${response.status} ${response.statusText}`,
+        );
+        return NextResponse.json(
+          { error: "Failed to fetch search preview from TMDB" },
+          { status: response.status },
+        );
+      }
+
+      const rawData = await response.json();
+      const result = TmdbResponseSchema.safeParse(rawData);
+      const data: TmdbResponse<Movie | TvShow> = result.success
+        ? result.data
+        : rawData;
+      rawResults = data.results || [];
+
+      if (langMatch && !langMatch.isPureLanguage) {
+        rawResults.sort((a, b) => {
+          const aMatch = a.original_language === langMatch.languageCode ? 1 : 0;
+          const bMatch = b.original_language === langMatch.languageCode ? 1 : 0;
+          if (aMatch !== bMatch) return bMatch - aMatch;
+          return (b.popularity || 0) - (a.popularity || 0);
+        });
+      }
     }
-
-    const rawData = await response.json();
-    const result = TmdbResponseSchema.safeParse(rawData);
-    const data: TmdbResponse<Movie | TvShow> = result.success
-      ? result.data
-      : rawData;
     const filteredResults: PreviewResult[] =
-      data.results
-        ?.filter(
+      rawResults
+        .filter(
           (item: Movie | TvShow) =>
             item.poster_path &&
             (item.media_type === "movie" || item.media_type === "tv"),

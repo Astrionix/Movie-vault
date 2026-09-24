@@ -133,8 +133,6 @@ export function MediaCarousel({ items }: MediaCarouselProps) {
           }}
         />
 
-
-
         <div className="relative z-30">
           <CarouselDetails
             current={items[currentIndex]}

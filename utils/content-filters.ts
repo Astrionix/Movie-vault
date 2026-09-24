@@ -753,7 +753,8 @@ export function getRecommendedRowsForPage(
 ): string[] {
   try {
     const validatedFilters = FiltersSchema.parse(filtersData);
-    return validatedFilters.pageRowRecommendations[pageType] || [];
+    const rows = validatedFilters.pageRowRecommendations[pageType] || [];
+    return Array.from(new Set(rows));
   } catch (error) {
     console.error("Error parsing filters JSON:", error);
     return [];
